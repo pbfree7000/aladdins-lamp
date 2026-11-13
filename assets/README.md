@@ -1,0 +1,1 @@
+Approved images required here: home.jpg, home-mobile.jpg, fresh-finds.jpg, treasure-hunt.jpg, treasure-journal.jpg, silver-vault.jpg, rachaels-apothecary.jpg, autumns-underground.jpg. These are extracted without redesign from the approved PDF archives. Upload the eight JPGs directly into this folder using GitHub's Add file > Upload files. Do not upload the ZIP itself.
