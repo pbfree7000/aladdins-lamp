@@ -36,7 +36,37 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function postUrl(slug){return location.origin+location.pathname+'#journal/'+encodeURIComponent(slug)}
 function slugify(p){return p.slug||String(p.title||'story').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function shareBar(p){const url=postUrl(slugify(p));const title=p.title+' — Aladdin’s Lamp Treasure Journal';return '<div class="sharebar"><a target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)+'">Share on Facebook</a><a target="_blank" rel="noopener noreferrer" href="https://www.pinterest.com/pin/create/button/?url='+encodeURIComponent(url)+'&description='+encodeURIComponent(title)+'">Pinterest</a><button type="button" data-share="'+esc(slugify(p))+'">Share elsewhere</button><button type="button" data-copy="'+esc(slugify(p))+'">Copy link</button></div>'}
-async function loadJournal(selectedSlug){journal.hidden=false;journal.innerHTML='<h2>Stories from the Treasure Keepers</h2><p class="note">Our first stories are being prepared. Check back for discoveries, memories and news from the shop.</p>';try{const response=await fetch('journal/posts.json',{cache:'no-store'});if(!response.ok)return;const posts=await response.json();if(!Array.isArray(posts)||!posts.length)return;const published=posts.filter(p=>p.status==='published').sort((a,b)=>String(b.date).localeCompare(String(a.date)));const chosen=selectedSlug?published.filter(p=>slugify(p)===selectedSlug):published;if(!chosen.length){if(selectedSlug)journal.innerHTML='<h2>Story not found</h2><p class="note"><a href="#journal">Browse the Treasure Journal</a></p>';return}journal.innerHTML='<h2>Stories from the Treasure Keepers</h2>'+(selectedSlug?'<p class="note"><a href="#journal">← All stories</a></p>':'')+chosen.map(p=>'<article><time>'+esc(p.date||'')+' · '+esc(p.author||'The Treasure Keepers')+'</time><h3><a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title||'Untitled')+'</a></h3>'+String(p.body||'').split(/\\n\\s*\\n/).map(t=>'<p>'+esc(t).replace(/\\n/g,'<br>')+'</p>').join('')+shareBar(p)+'</article>').join('');journal.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{const url=postUrl(b.dataset.copy);try{await navigator.clipboard.writeText(url);b.textContent='Link copied!'}catch{prompt('Copy this link:',url)}});journal.querySelectorAll('[data-share]').forEach(b=>b.onclick=async()=>{const p=published.find(p=>slugify(p)===b.dataset.share);const url=postUrl(b.dataset.share);if(navigator.share){try{await navigator.share({title:p.title,text:'A story from Aladdin’s Lamp',url})}catch(e){if(e.name!=='AbortError')prompt('Copy this link:',url)}}else{prompt('Copy and share this link:',url)}})};if(selectedSlug&&chosen[0])document.title=chosen[0].title+' | Aladdin’s Lamp'}catch(e){console.warn('Journal unavailable',e)}}
+async function loadJournal(selectedSlug){
+ journal.hidden=false;
+ journal.innerHTML='<h2>Stories from the Treasure Keepers</h2><p class="note">Our first stories are being prepared.</p>';
+ try {
+  const response=await fetch('journal/posts.json',{cache:'no-store'});
+  if(!response.ok)return;
+  const posts=await response.json();
+  if(!Array.isArray(posts))return;
+  const published=posts.filter(p=>p.status==='published').sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const chosen=selectedSlug?published.filter(p=>slugify(p)===selectedSlug):published;
+  if(!chosen.length)return;
+  journal.innerHTML='<h2>Stories from the Treasure Keepers</h2>'+chosen.map(p=>'<article><time>'+esc(p.date||'')+' · '+esc(p.author||'')+'</time><h3><a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a></h3>'+String(p.body||'').split(/\n\s*\n/).map(t=>'<p>'+esc(t)+'</p>').join('')+shareBar(p)+'</article>').join('');
+  journal.querySelectorAll('[data-copy]').forEach(b=>{
+   b.onclick=async()=>{
+    const url=postUrl(b.dataset.copy);
+    try{await navigator.clipboard.writeText(url);b.textContent='Link copied!'}
+    catch(e){prompt('Copy this link:',url)}
+   };
+  });
+  journal.querySelectorAll('[data-share]').forEach(b=>{
+   b.onclick=async()=>{
+    const p=published.find(item=>slugify(item)===b.dataset.share);
+    const url=postUrl(b.dataset.share);
+    if(navigator.share){
+     try{await navigator.share({title:p.title,url})}
+     catch(e){if(e.name!=='AbortError')prompt('Copy this link:',url)}
+    }else{prompt('Copy this link:',url)}
+   };
+  });
+ }catch(e){console.warn('Journal unavailable',e)}
+}
 function render(){const route=decodeURIComponent(location.hash.slice(1))||'home';const key=route.split('/')[0];const page=pages.find(p=>p.key===key)||pages[0];closeMenu();menu.innerHTML=pages.map(p=>'<a href="#'+p.key+'" '+(p.key===page.key?'aria-current="page"':'')+'>'+esc(p.name)+'</a>').join('');const pic=document.createElement('picture'),source=document.createElement('source'),img=document.createElement('img');source.media='(max-width:680px)';source.srcset=encodeURI(page.mobile);img.src=encodeURI(page.desktop);img.alt=page.title+' — illustrated Aladdin’s Lamp artwork';img.decoding='async';img.onerror=()=>{hero.textContent='Artwork temporarily unavailable — please use Explore to navigate.'};pic.append(source,img);hero.replaceChildren(pic);
 if(page.key==='home'){const h=document.createElement('div');h.className='hotspots home';[['silver','Silver Vault'],['hunt','Treasure Hunt'],['fresh','Fresh Finds'],['apothecary','Rachael’s Apothecary'],['journal','Treasure Journal']].forEach(([key,name])=>{const a=document.createElement('a');a.href='#'+key;a.setAttribute('aria-label','Explore '+name);a.textContent=name;h.appendChild(a)});hero.appendChild(h)}
 document.getElementById('sectionTitle').textContent=page.title;document.getElementById('sectionDescription').textContent=page.desc;journal.hidden=true;journal.innerHTML='';if(page.key==='journal')loadJournal(route.split('/')[1]||'');document.title=page.name+' | Aladdin’s Lamp Hidden Treasures';window.scrollTo(0,0)}
