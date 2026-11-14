@@ -1,0 +1,20 @@
+name: Image resolution audit
+on:
+  push:
+    paths:
+      - 'assets/**'
+      - '*.png'
+      - '*.jpg'
+      - 'scripts/audit-image-resolution.cjs'
+      - '.github/workflows/image-resolution.yml'
+  workflow_dispatch:
+jobs:
+  image-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit source image dimensions (report only)
+        run: node scripts/audit-image-resolution.cjs
