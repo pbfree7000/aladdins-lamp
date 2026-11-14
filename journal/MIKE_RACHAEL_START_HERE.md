@@ -5,8 +5,11 @@
 **Editorial access:** Ask the repository owner to invite each of you as a GitHub collaborator with your own account. Do not share passwords or access tokens. Only invited editors can change the public Journal feed.
 
 ## Write a new story (current publishing method)
+
+**Easier writing step:** Open https://aladdinslamp.xyz/journal/write.html, fill in the fields, click **Prepare story entry**, then **Copy story entry**. Continue below to paste it into GitHub. The composer does not save your writing automatically, so keep a copy of your text.
+
 1. Sign into GitHub, then open [the Journal posts file](https://github.com/pbfree7000/aladdins-lamp/edit/main/journal/posts.json).
-2. The file starts as `[]`. Each story goes inside the square brackets as a JSON object. Keep a comma **between** stories, but **not** after the final story.
+2. Paste the copied story entry inside the square brackets. The file starts as `[]`. Each story goes inside the square brackets as a JSON object. Keep a comma **between** stories, but **not** after the final story.
 3. Use this example as a template, replacing the words with your own:
 
 ```json
