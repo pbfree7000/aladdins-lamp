@@ -13,14 +13,6 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 .sharebar{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0}.sharebar button,.sharebar a{font:700 14px system-ui;border:1px solid #9c6833;border-radius:24px;background:#57221c;color:#ffe4ac;padding:10px 16px;text-decoration:none;cursor:pointer}.sharebar button:focus-visible,.sharebar a:focus-visible{outline:3px solid #245b64}footer{text-align:center;padding:20px;background:#091e20;color:#f0d9a7;font:13px/1.8 system-ui}footer a{color:#f4cf83}
 .journal{max-width:950px;margin:0 auto;padding:32px 18px 48px}.journal h2{text-align:center;color:#f4cf83}.journal .note{text-align:center;font:16px/1.6 system-ui}.journal article{margin:20px 0;padding:24px;background:#f4e4c1;color:#38231b;border:3px solid #b88642;border-radius:16px}.journal article h3{margin:0 0 10px;font-size:26px}.journal article p{font:16px/1.7 system-ui}.journal time{font:13px system-ui;color:#704e3c}
 @media(max-width:980px){.searchbox{position:absolute;top:8px;left:12px;right:auto;width:min(65vw,340px);margin:0}}@media(max-width:680px){.hotspots.subcategory{display:none}.searchbox{width:calc(100% - 150px);font-size:13px;padding:9px 10px}.menu-toggle{right:8px;top:8px;padding:9px 12px;font-size:14px}.hotspots.home a:nth-child(1){left:9%;top:62%;width:38%;height:10%}.hotspots.home a:nth-child(2){left:52%;top:62%;width:39%;height:10%}.hotspots.home a:nth-child(3){left:9%;top:73%;width:38%;height:10%}.hotspots.home a:nth-child(4){left:52%;top:73%;width:39%;height:10%}.hotspots.home a:nth-child(5){left:27%;top:85%;width:46%;height:12%}}
-/* Desktop-only restoration veil: hides the navigation painted into the original raster art.
-   The center gap is deliberately kept clear for the approved Aladdin's Lamp logo.
-   This is reversible; native artwork files are not modified. */
-@media(min-width:981px){
-.hero::before,.hero::after{content:"";position:absolute;z-index:4;top:0;height:clamp(44px,5.2vw,100px);pointer-events:none;background:linear-gradient(180deg,rgba(13,12,11,.96) 0%,rgba(13,12,11,.90) 70%,rgba(13,12,11,0) 100%)}
-.hero::before{left:0;width:53%}
-.hero::after{right:0;width:12%}
-}
 </style></head><body>
 <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="menu">☰ Explore</button><nav class="menu" id="menu" aria-label="Explore Aladdin's Lamp" hidden></nav>
 <main><section class="hero" id="hero" aria-label="Illustrated Aladdin's Lamp page"></section><nav id="subcategoryMobile" class="subcategory-mobile" aria-label="Explore illustrated subcategories"></nav><nav id="categoryNav" class="category-nav" aria-label="Additional illustrated category"></nav><section id="catalog" class="catalog" hidden></section><section id="searchResults" class="search-results" hidden></section><section id="journal" class="journal" hidden></section>
