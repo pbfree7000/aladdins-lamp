@@ -18,11 +18,11 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
    the upper-right neon zone during a restrained irregular electrical flicker. */
 .hero .ravenna-neon{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .hero .ravenna-neon picture,.hero .ravenna-neon img{display:block;width:100%;height:auto}
-.hero .ravenna-neon img{filter:brightness(1.6) saturate(1.5);animation:ravenna-neon-flicker 9.2s infinite}
+.hero .ravenna-neon img{filter:brightness(1.22) saturate(1.12);animation:ravenna-neon-flicker 18s ease-in-out infinite}
 .hero .ravenna-neon{mask-image:radial-gradient(ellipse 13% 12% at 86% 15%,#000 18%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 13% 12% at 86% 15%,#000 18%,transparent 100%)}
-@keyframes ravenna-neon-flicker{0%,7%,9%,11%,48%,50%,52%,100%{opacity:.9}8%,10%,49%,51%{opacity:.07}12%,53%{opacity:.72}}
+@keyframes ravenna-neon-flicker{0%,37%,39%,41%,74%,100%{opacity:.48}38%{opacity:.18}40%{opacity:.33}75%{opacity:.39}77%{opacity:.48}}
 @media(max-width:680px){.hero .ravenna-neon{mask-image:radial-gradient(ellipse 24% 9% at 82% 13%,#000 10%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 24% 9% at 82% 13%,#000 10%,transparent 100%)}}
-@media(prefers-reduced-motion:reduce){.hero .ravenna-neon img{animation:none;opacity:.35}}
+@media(prefers-reduced-motion:reduce){.hero .ravenna-neon img{animation:none;opacity:.25}}
 </style></head><body>
 <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="menu">☰ Explore</button><nav class="menu" id="menu" aria-label="Explore Aladdin's Lamp" hidden></nav>
 <main><section class="hero" id="hero" aria-label="Illustrated Aladdin's Lamp page"></section><nav id="subcategoryMobile" class="subcategory-mobile" aria-label="Explore illustrated subcategories"></nav><nav id="categoryNav" class="category-nav" aria-label="Additional illustrated category"></nav><section id="catalog" class="catalog" hidden></section><section id="searchResults" class="search-results" hidden></section><section id="journal" class="journal" hidden></section>
