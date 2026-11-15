@@ -16,3 +16,7 @@ database_id = "153117ce-cb3d-4ead-86f8-fa9e5e61c26e"
 
 [vars]
 ALLOWED_ORIGIN = "https://aladdinslamp.xyz"
+
+[[r2_buckets]]
+binding = "JOURNAL_PHOTOS"
+bucket_name = "aladdins-lamp-journal-photos"
