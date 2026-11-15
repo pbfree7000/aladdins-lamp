@@ -1,5 +1,7 @@
 // Cloudflare Worker: authenticated, isolated author drafts with D1 publication.
 // Cloudflare Access JWT is verified against the team's JWKS on EVERY request.
+// build-worker.mjs injects the Writing Desk HTML at deployment time.
+const EDITOR_HTML = null;
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}});
 const bytes=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
 function cors(request,env){const origin=request.headers.get('Origin');return origin===env.ALLOWED_ORIGIN?{'access-control-allow-origin':origin,'access-control-allow-headers':'authorization, content-type','access-control-allow-methods':'GET, POST, PUT, DELETE, OPTIONS','access-control-allow-credentials':'true','vary':'Origin'}:{}}
@@ -41,12 +43,14 @@ export default {async fetch(request,env){
  if(!env.DB)return json({error:'Database not configured'},503,corsHeaders);
  const url=new URL(request.url),path=url.pathname.replace(/\/$/,'');
  try{
+ if(path==='/desk'&&request.method==='GET'){return new Response(EDITOR_HTML||'The editor bundle has not been built',{status:EDITOR_HTML?200:503,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY','content-security-policy':"default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'"}})}
+ if(path==='/config.json'&&request.method==='GET')return json({apiUrl:new URL(request.url).origin},200,corsHeaders);
  if(path==='/api/me'&&request.method==='GET')return json({...user,publishEnabled:true},200,corsHeaders);
  if(path==='/api/articles'&&request.method==='GET'){const data=await env.DB.prepare('SELECT * FROM articles WHERE owner_email=? ORDER BY updated_at DESC').bind(user.email).all();return json({articles:data.results},200,corsHeaders)}
  if(path==='/api/articles'&&request.method==='POST'){
   const d=validate(await request.json()),id=crypto.randomUUID(),now=new Date().toISOString();
   await env.DB.prepare('INSERT INTO articles(id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(id,user.author,user.email,d.title,d.category,d.excerpt,d.body,d.cover,'draft',now,now).run();
-  return json({id,author:user.author,status:'draft'},201,corsHeaders)}
+  return json({id,author:user.author,status:'draft',updated_at:now},201,corsHeaders)}
  const match=path.match(/^\/api\/articles\/([a-f0-9-]{36})(\/publish)?$/);
  if(match){const id=match[1];const story=await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).first();if(!story)return json({error:'Not found'},404,corsHeaders);
   if(match[2]&&request.method==='POST'){
@@ -54,7 +58,14 @@ export default {async fetch(request,env){
    if(story.status==='published')return json({error:'Already published'},409,corsHeaders);
    const result=await publishToDatabase(env,story,user);
    return json(result,200,corsHeaders)}
-  if(!match[2]&&request.method==='PUT'){if(story.status==='published')return json({error:'Published stories are read-only'},409,corsHeaders);const d=validate(await request.json());await env.DB.prepare('UPDATE articles SET title=?,category=?,excerpt=?,body=?,cover=?,updated_at=? WHERE id=? AND owner_email=?').bind(d.title,d.category,d.excerpt,d.body,d.cover,new Date().toISOString(),id,user.email).run();return json({saved:true},200,corsHeaders)}
+  if(!match[2]&&request.method==='PUT'){
+    if(story.status==='published')return json({error:'Published stories are read-only'},409,corsHeaders);
+    const input=await request.json(),expected=input.expectedUpdatedAt;
+    if(typeof expected!=='string'||!expected)return json({error:'Reload story before saving'},428,corsHeaders);
+    const d=validate(input),now=new Date().toISOString();
+    const result=await env.DB.prepare('UPDATE articles SET title=?,category=?,excerpt=?,body=?,cover=?,updated_at=? WHERE id=? AND owner_email=? AND status=? AND updated_at=?').bind(d.title,d.category,d.excerpt,d.body,d.cover,now,id,user.email,'draft',expected).run();
+    if(result.meta?.changes!==1)return json({error:'This story changed on another device. Export your draft, then refresh to resolve the changes.'},409,corsHeaders);
+    return json({saved:true,updated_at:now},200,corsHeaders)}
   if(!match[2]&&request.method==='DELETE'){if(story.status==='published')return json({error:'Cannot delete published story'},409,corsHeaders);await env.DB.prepare('DELETE FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).run();return json({deleted:true},200,corsHeaders)}
  }
  return json({error:'Not found'},404,corsHeaders);
