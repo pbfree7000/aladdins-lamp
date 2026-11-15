@@ -1,4 +1,4 @@
-name: Journal editor syntax check
+name: Journal editor security and integration tests
 on:
   push:
     paths:
@@ -17,8 +17,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check backend syntax
-        run: node --check backend/src/worker.js
+      - name: Run journal backend tests
+        run: |
+          cd backend
+          npm test
       - name: Check inline editor script
         run: |
           node - <<'NODE'
