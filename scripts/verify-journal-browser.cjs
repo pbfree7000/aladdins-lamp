@@ -38,7 +38,7 @@ async function main(){
   const articles=new Map();let n=0;
   await desk.route('**/config.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({apiUrl:'https://journal-api.aladdinslamp.xyz'})}));
   await desk.route('https://journal-api.aladdinslamp.xyz/api/**',r=>{
-   const u=new URL(r.request().url),p=u.pathname,method=r.request().method();
+   const u=new URL(r.request().url()),p=u.pathname,method=r.request().method();
    const headers={'access-control-allow-origin':base,'access-control-allow-credentials':'true','access-control-allow-headers':'content-type','access-control-allow-methods':'GET, POST, PUT, DELETE, OPTIONS'};
    if(method==='OPTIONS')return r.fulfill({status:204,headers});
    let status=200,value={};
