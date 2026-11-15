@@ -25,7 +25,7 @@ class FakeD1{
    all:async()=>{if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
    run:async()=>{let changes=0;
     if(sql.startsWith('INSERT INTO articles')){const [id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at]=p;this.rows.set(id,{id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at,slug:null,published_at:null});changes=1}
-    else if(sql.includes("SET status='published'")){const [slug,published_at,updated_at,id,owner_email]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status==='draft'){Object.assign(d,{status:'published',slug,published_at,updated_at});changes=1}}
+    else if(sql.includes("SET status='published'")){const [slug,published_at,updated_at,id,owner_email,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status==='draft'&&d.updated_at===expected){Object.assign(d,{status:'published',slug,published_at,updated_at});changes=1}}
     else if(sql.startsWith('UPDATE articles SET title=')){const [title,category,excerpt,body,cover,updated_at,id,owner_email,status,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status===status&&d.updated_at===expected){Object.assign(d,{title,category,excerpt,body,cover,updated_at});changes=1}}
     else if(sql.startsWith('DELETE FROM articles')){const [id,email]=p;const d=this.rows.get(id);if(d&&d.owner_email===email){this.rows.delete(id);changes=1}}
     else throw Error('Unsupported run SQL: '+sql);
@@ -70,7 +70,12 @@ test('create, retrieve and revise privately with cross-author protection',async(
  assert.equal(stale.status,409);
  const edited=await worker.fetch(request('/api/articles/'+c.id,'PUT','mike@example.com',{...article,title:'Updated silver find',expectedUpdatedAt:c.updated_at}),env);
  assert.equal(edited.status,200);
- const published=await worker.fetch(request('/api/articles/'+c.id+'/publish','POST','mike@example.com'),env);
+ const noVersion=await worker.fetch(request('/api/articles/'+c.id+'/publish','POST','mike@example.com',{}),env);
+ assert.equal(noVersion.status,428);
+ const stalePublish=await worker.fetch(request('/api/articles/'+c.id+'/publish','POST','mike@example.com',{expectedUpdatedAt:c.updated_at}),env);
+ assert.equal(stalePublish.status,409);
+ const current=(await (await worker.fetch(request('/api/articles'),env)).json()).articles[0];
+ const published=await worker.fetch(request('/api/articles/'+c.id+'/publish','POST','mike@example.com',{expectedUpdatedAt:current.updated_at}),env);
  assert.equal(published.status,200);
  assert.equal((await published.json()).status,'published');
  assert.equal((await worker.fetch(request('/api/articles/'+c.id,'PUT','mike@example.com',{...article,expectedUpdatedAt:c.updated_at}),env)).status,409);
