@@ -29,35 +29,37 @@ const viewports = [
      await page.waitForFunction(()=>{const im=document.querySelector('.hero > picture img');return im&&im.complete},{timeout:15000});
      if(route==='journal')await page.locator('#journal .journal-room').first().waitFor({timeout:10000});
      else await page.waitForTimeout(250);
+     // The approved hero itself contains a painted navigation bar. A DOM bar above it is a visual regression.
      const c=await page.evaluate(()=>{
-      const image=document.querySelector('.hero > picture img');
-      const nav=document.querySelector('.art-nav');
-      const links=nav?.querySelector('.nav-links');
-      const chosen=links?.querySelector('[aria-current="page"]');
-      const ir=image?.getBoundingClientRect(),nr=nav?.getBoundingClientRect(),cr=links?.getBoundingClientRect(),sr=chosen?.getBoundingClientRect();
-      const toggle=document.getElementById('menuToggle');
+      const image=document.querySelector('.hero > picture img'),hero=document.querySelector('.hero');
+      const painted=document.querySelector('.image-nav'),toggle=document.getElementById('menuToggle');
+      const form=document.querySelector('.hero > .search-form');
+      const r=hero?.getBoundingClientRect();
       return {
-       imageLoaded:!!image?.naturalWidth,
-       imageWidth:image?.naturalWidth||0,imageHeight:image?.naturalHeight||0,imageUrl:image?.currentSrc||'',
-       navCount:document.querySelectorAll('.art-nav').length,
-       navVisible:!!nr&&nr.height>30,
-       navOverlapsImage:!!ir&&!!nr&&nr.bottom>ir.top+2,
-       imageClippedAtTop:!!ir&&ir.top<(nr?.bottom||0)-2,
+       imageLoaded:!!image?.naturalWidth,imageWidth:image?.naturalWidth||0,imageHeight:image?.naturalHeight||0,
+       imageUrl:image?.currentSrc||'',heroTop:r?.top||0,
+       extraNavCount:document.querySelectorAll('.art-nav').length,
+       paintedNavActive:!!painted&&getComputedStyle(painted).display!=='none',
+       paintedLinkCount:painted?.querySelectorAll('.painted-link').length||0,
+       navLinksClickable:painted?[...painted.querySelectorAll('.painted-link')].every(a=>getComputedStyle(a).pointerEvents==='auto'):false,
+       imageSearchVisible:!!form&&getComputedStyle(form).display!=='none',
+       exploreVisible:!!toggle&&getComputedStyle(toggle).display!=='none'&&toggle.getBoundingClientRect().height>=40,
+       exploreBottom:toggle?.getBoundingClientRect().bottom||0,
        horizontalOverflow:document.documentElement.scrollWidth>innerWidth+4,
-       currentNavVisible:!!sr&&!!cr&&sr.left>=cr.left-7&&sr.right<=cr.right+7,
-       activeLinkCount:links?.querySelectorAll('[aria-current="page"]').length||0,
-       touchNavHeight:chosen?.getBoundingClientRect().height||0,
-       exploreVisible:!!toggle&&toggle.getBoundingClientRect().height>=40,
        journalRooms:document.querySelectorAll('#journal .journal-room').length
       }
      });
      if(!c.imageLoaded)issues.push('Hero artwork failed to load');
-     if(c.navCount!==1||!c.navVisible)issues.push('Missing/duplicate navigation');
-     if(c.navOverlapsImage||c.imageClippedAtTop)issues.push('Navigation overlaps/crops approved artwork');
+     if(c.extraNavCount!==0||c.heroTop>3)issues.push('Duplicate navigation above approved artwork');
      if(c.horizontalOverflow)issues.push('Horizontal overflow');
-     if(!c.currentNavVisible||c.activeLinkCount!==1)issues.push('Current section not visible/identified in navigation');
-     if(!c.exploreVisible)issues.push('Explore menu missing/too small');
-     if(viewport.width<=980&&c.touchNavHeight<42)issues.push('Mobile navigation tap target too small');
+     if(viewport.width>980){
+      if(!c.paintedNavActive||c.paintedLinkCount!==7||!c.navLinksClickable)issues.push('Painted desktop navigation is not functional');
+      if(!c.imageSearchVisible)issues.push('Illustrated desktop search is not functional');
+      if(c.exploreVisible)issues.push('Duplicate floating Explore control on desktop');
+     }else{
+      if(c.paintedNavActive)issues.push('Tiny painted links in mobile mode');
+      if(!c.exploreVisible||c.exploreBottom>viewport.height/3)issues.push('Mobile Explore is missing or overlays story text');
+     }
      if(viewport.width<=680&&route==='fresh'&&!c.imageUrl.endsWith('/fresh-finds-mobile.jpg'))issues.push('Wrong Fresh Finds mobile artwork: '+c.imageUrl);
      if(route==='journal'&&c.journalRooms!==3)issues.push('Journal collections not rendered');
      if(viewport.screenshots)await page.screenshot({path:path.join(folder,route+'.png'),fullPage:true,animations:'disabled'});
@@ -71,6 +73,36 @@ const viewports = [
     console.log(viewport.name+' '+route+': '+(issues.length?'FAIL '+issues.join('; '):'PASS'));
     await page.close();
    }
+  }
+
+
+  // Exercise the real navigation in the image, not merely its hidden DOM structure.
+  for(const width of [375,1440]){
+   const page=await browser.newPage({viewport:{width,height:900}});
+   const issues=[];
+   try{
+    await page.goto(new URL(base+'#journal').toString(),{waitUntil:'domcontentloaded'});
+    if(width>980){
+     await page.locator('.image-nav .painted-link[href="#silver"]').click();
+     if(new URL(page.url()).hash!=='#silver')issues.push('Painted Silver Vault link failed');
+     await page.locator('.image-menu-hotspot').click();
+     if(!(await page.locator('#menu').isVisible()))issues.push('Painted hamburger failed to open menu');
+     await page.keyboard.press('Escape');
+     await page.locator('.hero>.search-form input[type="search"]').fill('silver');
+     await page.locator('.hero>.search-form input[type="search"]').press('Enter');
+     if(new URL(page.url()).hash!=='#search/silver')issues.push('Painted search field failed');
+    }else{
+     await page.locator('#menuToggle').click();
+     if(!(await page.locator('#menu').isVisible()))issues.push('Mobile painted hamburger failed');
+     await page.locator('#mobileSearch').fill('silver');
+     await page.locator('#mobileSearch').press('Enter');
+     if(new URL(page.url()).hash!=='#search/silver')issues.push('Mobile search failed');
+    }
+   }catch(e){issues.push('Interaction error: '+e.message)}
+   if(issues.length)failed=true;
+   report.push({viewport:'interaction-'+width,width,route:'nav-controls',issues});
+   console.log('navigation controls '+width+': '+(issues.length?'FAIL '+issues.join('; '):'PASS'));
+   await page.close();
   }
 
   // Also verify the two public example journal articles, including their actual image URLs.
