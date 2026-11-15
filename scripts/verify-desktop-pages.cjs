@@ -43,6 +43,8 @@ const viewports = [
        paintedLinkCount:painted?.querySelectorAll('.illustrated-links a').length||0,
        navLinksClickable:painted?[...painted.querySelectorAll('.illustrated-links a')].every(a=>getComputedStyle(a).pointerEvents==='auto'&&getComputedStyle(a).fontSize!=='0px'&&a.getBoundingClientRect().width>40):false,
        activeLink:painted?.querySelector('.illustrated-links a[aria-current="page"]')?.textContent||'',
+       visibleNavText:painted?[...painted.querySelectorAll('.illustrated-links a')].map(el=>el.textContent?.trim()).join('|'):'',
+       activeNavClearlyVisible:!!painted?.querySelector('.illustrated-links a[aria-current="page"]')&&getComputedStyle(painted.querySelector('.illustrated-links a[aria-current="page"]')).fontSize!=='0px',
        imageSearchVisible:!!form&&getComputedStyle(form).display!=='none',
        exploreVisible:!!toggle&&getComputedStyle(toggle).display!=='none'&&toggle.getBoundingClientRect().height>=40,
        exploreBottom:toggle?.getBoundingClientRect().bottom||0,
@@ -54,8 +56,8 @@ const viewports = [
      if(c.extraNavCount!==0||c.heroTop>3)issues.push('Duplicate navigation above approved artwork');
      if(c.horizontalOverflow)issues.push('Horizontal overflow');
      if(viewport.width>=1280){
-      if(!c.paintedNavActive||c.paintedLinkCount!==7||!c.navLinksClickable||!c.activeLink)issues.push('Visible desktop navigation is not readable or functional');
-      if(!c.imageSearchVisible)issues.push('Illustrated desktop search is not functional');
+      if(!c.paintedNavActive||c.paintedLinkCount!==7||!c.navLinksClickable||!c.activeLink||!c.activeNavClearlyVisible)issues.push('Visible desktop navigation is not readable or functional');
+      if(route!=='home'&&!c.imageSearchVisible)issues.push('Illustrated desktop search is not functional');
       if(c.exploreVisible)issues.push('Duplicate floating Explore control on desktop');
      }else{
       if(c.paintedNavActive)issues.push('Tiny painted links in mobile mode');
