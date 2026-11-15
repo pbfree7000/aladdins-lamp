@@ -64,7 +64,7 @@ const viewports = [
      if(c.cleanNavLabel!==labelByRoute[route])issues.push('Incorrect mobile page heading: '+c.cleanNavLabel);
 
      if(c.horizontalOverflow)issues.push('Horizontal overflow');
-     const expectedHero={home:'home-navfree.jpg',hunt:'treasure-hunt-navfree.jpg',silver:'silver-vault-navfree.jpg',apothecary:'rachaels-apothecary-navfree.jpg',underground:'autumns-underground-navfree.jpg',fresh:'fresh-finds-navfree.jpg',journal:'treasure-journal-navfree.jpg'};
+     const expectedHero={home:'home-navfree.jpg',hunt:'treasure-hunt-navfree-fixed.jpg',silver:'silver-vault-navfree.jpg',apothecary:'rachaels-apothecary-navfree-fixed.jpg',underground:'autumns-underground-navfree-fixed.jpg',fresh:'fresh-finds-navfree-fixed.jpg',journal:'treasure-journal-navfree-fixed.jpg'};
      if(!(route==='home'&&viewport.width<=680)&&!c.imageUrl.endsWith('/'+expectedHero[route]))issues.push('Incorrect navigation-free hero artwork: '+c.imageUrl);
      if(viewport.width>=1280){
        if(c.exploreVisible)issues.push('Second floating Explore control on desktop');
