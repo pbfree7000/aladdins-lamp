@@ -1,0 +1,9 @@
+{
+  "name": "aladdins-lamp-journal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build-worker.mjs",
+    "test": "node build-worker.mjs && node --check dist/worker.js && node --check src/public-feed.js && node --test tests/*.test.mjs"
+  }
+}
