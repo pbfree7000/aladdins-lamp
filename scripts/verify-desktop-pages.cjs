@@ -72,6 +72,37 @@ const viewports = [
     await page.close();
    }
   }
+
+  // Also verify the two public example journal articles, including their actual image URLs.
+  for(const width of [375,1440]){
+   for(const slug of ['sample-rachaels-apothecary-tea-tray','sample-mikes-silver-field-notes']){
+    const page=await browser.newPage({viewport:{width,height:900}});
+    const issues=[];const url=new URL(base);url.hash='journal/'+slug;
+    page.on('pageerror',e=>issues.push('JavaScript: '+e.message));
+    try{
+     await page.goto(url.toString(),{waitUntil:'domcontentloaded',timeout:45000});
+     await page.waitForSelector('#journal .journal-sample-banner',{timeout:15000});
+     await page.waitForFunction(()=>{
+      const images=[...document.querySelectorAll('#journal article img')];
+      return images.length===2&&images.every(im=>im.complete&&im.naturalWidth>0)
+     },{timeout:20000});
+     const check=await page.evaluate(()=>({
+      imageCount:document.querySelectorAll('#journal article img').length,
+      captions:document.querySelectorAll('#journal figure figcaption').length,
+      socialLinks:document.querySelectorAll('#journal .sharebar a').length,
+      socialButtons:document.querySelectorAll('#journal .sharebar button').length,
+      horizontalOverflow:document.documentElement.scrollWidth>innerWidth+3
+     }));
+     if(check.imageCount!==2||check.captions!==1)issues.push('Missing cover or captioned inline image');
+     if(check.socialLinks!==2||check.socialButtons!==2)issues.push('Missing share actions');
+     if(check.horizontalOverflow)issues.push('Horizontal overflow');
+     report.push({viewport:'sample-'+width,width,route:slug,url:url.toString(),...check,issues});
+    }catch(e){issues.push('Sample/article image failure: '+e.message);report.push({viewport:'sample-'+width,width,route:slug,url:url.toString(),issues})}
+    if(issues.length)failed=true;
+    console.log('sample '+width+' '+slug+': '+(issues.length?'FAIL '+issues.join('; '):'PASS'));
+    await page.close();
+   }
+  }
  }finally{await browser.close()}
  fs.mkdirSync('artifacts',{recursive:true});
  fs.writeFileSync('artifacts/report.json',JSON.stringify({testedAt:new Date().toISOString(),base,viewports,routes:report},null,2));
