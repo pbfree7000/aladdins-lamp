@@ -15,3 +15,13 @@ CREATE TABLE IF NOT EXISTS articles (
 );
 CREATE INDEX IF NOT EXISTS idx_articles_owner ON articles(owner_email,updated_at);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug) WHERE slug IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS journal_photos (
+ id TEXT PRIMARY KEY,
+ article_id TEXT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+ owner_email TEXT NOT NULL,
+ object_key TEXT NOT NULL UNIQUE,
+ content_type TEXT NOT NULL,
+ created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_journal_photos_article ON journal_photos(article_id);
