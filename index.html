@@ -180,7 +180,7 @@ toggle.addEventListener('click',()=>{menu.hidden=!menu.hidden;toggle.setAttribut
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
 document.addEventListener('click',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==toggle)closeMenu()});
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function postUrl(slug){return location.origin+location.pathname+'#journal/'+encodeURIComponent(slug)}
+function postUrl(slug){if(['sample-rachaels-apothecary-tea-tray','sample-mikes-silver-field-notes'].includes(slug))return location.origin+'/journal/'+encodeURIComponent(slug)+'.html';return location.origin+location.pathname+'#journal/'+encodeURIComponent(slug)}
 function slugify(p){return p.slug||String(p.title||'story').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function shareBar(p){const url=postUrl(slugify(p));const title=p.title+' — Aladdin’s Lamp Treasure Journal';return '<div class="sharebar"><a target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)+'">Share on Facebook</a><a target="_blank" rel="noopener noreferrer" href="https://www.pinterest.com/pin/create/button/?url='+encodeURIComponent(url)+'&description='+encodeURIComponent(title)+'">Pinterest</a><button type="button" data-share="'+esc(slugify(p))+'">Share elsewhere</button><button type="button" data-copy="'+esc(slugify(p))+'">Copy link</button></div>'}
 
