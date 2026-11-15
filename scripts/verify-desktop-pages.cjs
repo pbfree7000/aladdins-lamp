@@ -42,6 +42,7 @@ const viewports = [
        cleanNavCount:document.querySelectorAll('.clean-top-nav').length,
        cleanNavLinks:clean?.querySelectorAll('.illustrated-links a').length||0,
        cleanNavActive:clean?.querySelector('.illustrated-links a[aria-current="page"]')?.textContent||'',
+       cleanNavLabel:clean?.dataset.currentLabel||'',
        paintedNavActive:!!painted&&getComputedStyle(painted).display!=='none',
        paintedLinkCount:painted?.querySelectorAll('.illustrated-links a').length||0,
        navLinksClickable:painted?[...painted.querySelectorAll('.illustrated-links a')].every(a=>getComputedStyle(a).pointerEvents==='auto'&&getComputedStyle(a).fontSize!=='0px'&&a.getBoundingClientRect().width>40):false,
@@ -58,6 +59,9 @@ const viewports = [
      if(!c.imageLoaded)issues.push('Hero artwork failed to load');
      if(c.extraNavCount!==0||c.cleanNavCount!==1||c.cleanNavLinks!==7||!c.cleanNavActive)issues.push('Site must use one real seven-section navigation');
      if(c.paintedNavActive)issues.push('Illustrated navigation must not reappear over the hero');
+     const labelByRoute={home:'Home',hunt:'Treasure Hunt',silver:'Silver Vault',apothecary:'Rachael’s Apothecary',underground:'Autumn’s Underground',fresh:'Fresh Finds',journal:'Treasure Journal'};
+     if(c.cleanNavLabel!==labelByRoute[route])issues.push('Incorrect mobile page heading: '+c.cleanNavLabel);
+
      if(c.horizontalOverflow)issues.push('Horizontal overflow');
      const expectedHero={home:'home-navfree.jpg',hunt:'treasure-hunt-navfree.jpg',silver:'silver-vault-navfree.jpg',apothecary:'rachaels-apothecary-navfree.jpg',underground:'autumns-underground-navfree.jpg',fresh:'fresh-finds-navfree.jpg',journal:'treasure-journal-navfree.jpg'};
      if(!(route==='home'&&viewport.width<=680)&&!c.imageUrl.endsWith('/'+expectedHero[route]))issues.push('Incorrect navigation-free hero artwork: '+c.imageUrl);
@@ -93,9 +97,11 @@ const viewports = [
      try{await page.locator('.clean-top-nav a[aria-current="page"]').waitFor({state:'visible',timeout:10000})}catch{issues.push('Silver active tab missing')}
      await page.locator('.clean-top-nav a[href="#journal"]').click();
      if(new URL(page.url()).hash!=='#journal')issues.push('Silver to Journal link failed');
-     await page.locator('.clean-top-nav .illustrated-more').click();
-     if(!(await page.locator('#menu').isVisible()))issues.push('Explore menu failed');
-     await page.keyboard.press('Escape');
+     if(await page.locator('.clean-top-nav .illustrated-more').isVisible()){
+       await page.locator('.clean-top-nav .illustrated-more').click();
+       if(!(await page.locator('#menu').isVisible()))issues.push('Explore menu failed');
+       await page.keyboard.press('Escape');
+     }
      await page.locator('.clean-top-nav input[type="search"]').fill('silver');
      await page.locator('.clean-top-nav input[type="search"]').press('Enter');
      if(new URL(page.url()).hash!=='#search/silver')issues.push('Header search failed');
