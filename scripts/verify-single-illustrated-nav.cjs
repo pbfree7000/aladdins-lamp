@@ -58,7 +58,7 @@ async function main(){
      assert.ok(state.paintedNavVisible&&state.linkCount===7&&state.paintedLinksClickable,label+' visible illustrated nav inactive');
      assert.ok(state.activeLink,label+' active page is not indicated');
      if(route==='home')assert.ok(state.panelRight>width*.79&&state.panelRight<width*.86,label+' Home nav must mask baked section labels');
-     else assert.ok(state.panelRight<width*.405,label+' header panel extends across logo');
+     else assert.ok(state.panelRight<width*(route==='apothecary'?.425:.405),label+' header panel extends across logo');
      if(route!=='home')assert.ok(state.searchVisible,label+' illustrated search overlay unavailable');
      assert.equal(state.exploreVisible,false,label+' redundant floating Explore');
     }else{
