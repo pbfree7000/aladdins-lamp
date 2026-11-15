@@ -1,0 +1,38 @@
+name: Seven navigation-free rooms — desktop and mobile review
+on:
+  push:
+    branches: [feature/navfree-all-rooms]
+    paths:
+      - index.html
+      - scripts/verify-desktop-pages.cjs
+      - assets/*-navfree.jpg
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Serve tested feature branch
+        run: python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/al-hero-server.log 2>&1 &
+      - name: Verify seven routes and sample journal pages
+        env:
+          SITE_URL: http://127.0.0.1:8765/
+        run: node scripts/verify-desktop-pages.cjs
+      - name: Save visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: navfree-seven-review-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
