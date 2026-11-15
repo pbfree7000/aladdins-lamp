@@ -7,14 +7,14 @@ Established: 15 November 2026. The approved visual character is a richly illustr
 | Route | Page | Live desktop hero | Live mobile hero |
 |---|---|---|---|
 | `#home` | Home | `assets/home-navfree.jpg` | original illustrated poster (contains no menu bar) |
-| `#hunt` | Treasure Hunt / Shop | `assets/treasure-hunt-navfree.jpg` | same clean image, responsive crop |
+| `#hunt` | Treasure Hunt / Shop | `assets/treasure-hunt-navfree-fixed.jpg` | same clean image, responsive crop |
 | `#silver` | Silver Vault | `assets/silver-vault-navfree.jpg` | same clean image, responsive crop |
-| `#apothecary` | Rachael's Apothecary | `assets/rachaels-apothecary-navfree.jpg` | same clean image, responsive crop |
-| `#underground` | Autumn's Underground | `assets/autumns-underground-navfree.jpg` | same clean image, responsive crop |
-| `#fresh` | Fresh Finds | `assets/fresh-finds-navfree.jpg` | same clean image, responsive crop |
-| `#journal` | Treasure Journal | `assets/treasure-journal-navfree.jpg` | same clean image, responsive crop |
+| `#apothecary` | Rachael's Apothecary | `assets/rachaels-apothecary-navfree-fixed.jpg` | same clean image, responsive crop |
+| `#underground` | Autumn's Underground | `assets/autumns-underground-navfree-fixed.jpg` | same clean image, responsive crop |
+| `#fresh` | Fresh Finds | `assets/fresh-finds-navfree-fixed.jpg` | same clean image, responsive crop |
+| `#journal` | Treasure Journal | `assets/treasure-journal-navfree-fixed.jpg` | same clean image, responsive crop |
 
-The original illustrated files are untouched as source archives. `scripts/produce_navfree_heroes.py` documents the upper artwork cleanup procedure for six rooms; Silver Vault retains its separately approved nav-free hero. Never overwrite the originals or regenerate assets without a visual check.
+The originals remain untouched. The previous `scripts/produce_navfree_heroes.py` applied a vertical remapping to the upper artwork and visibly stretched people, hair, signs and other subjects. It is superseded by `scripts/restore_unwarped_heroes.py`, which retouches only the original navigation strip, preserves every pixel below that strip before JPEG encoding, and records a quantitative fidelity audit. Never reintroduce the remap method.
 
 ## Navigation contract
 
@@ -41,8 +41,10 @@ The original illustrated files are untouched as source archives. `scripts/produc
 
 ## Source-art navigation cleanup (15 November 2026)
 
-The Silver Vault desktop and mobile now use the dedicated nav-free hero asset `assets/silver-vault-navfree.jpg` (1774 × 814 pixels). Its illustrated navigation was **removed from the image itself** rather than hidden by a black rectangle. The source still contains the Aladdin’s Lamp logo, Mike’s Silver Vault plaque, silver display and a decorative metals-prices board. The visual board is illustrative and must not be represented as a verified live data feed without a real integration.
+Silver Vault and Home were already made with non-warping cleanup. The other five have been rebuilt from their undistorted originals. The seven rooms share one real `.clean-top-nav` component; no art-embedded navigation or visual black overlay is used. The decorative Silver Vault metals board is illustrative, not a verified live market feed.\n
+## Geometric distortion regression gate
 
-The Silver Vault route now uses a **single real HTML navigation** `.clean-top-nav` positioned above the art, with seven clickable links, active Silver Vault state and searchable desktop input. On mobile/tablet, the nav becomes a compact Silver Vault title and Explore menu, and the art gets a centered readability crop. The old painted-overlay `.image-nav` remains only on other pages until their source artwork has been cleaned; do not reintroduce the black-patch strategy to Silver.
-
-Production and branch QA must assert that Silver uses the new asset and `.clean-top-nav`, has no `.image-nav` overlay, retains responsive category links, and that changing routes removes the Silver-only nav. Clean the remaining six source artworks through a consistent visual review before switching them to the real header. Preserve the existing approved art and creative decision-making; product data remains Mike’s agent’s responsibility.
+- **Source truth:** the unchanged original hero JPEGs, not a previously stretched nav-free derivative.
+- **Repair region:** 33–57 top rows (by source resolution), strictly confined to left/right baked-in header details. The central logo and every pixel below the header are identical to the original *before JPEG export*.
+- **Audit:** `python scripts/restore_unwarped_heroes.py` asserts source geometry is unchanged and records JPEG decode differences below the retouch. Browser QA verifies correct `*-navfree-fixed.jpg` sources on all affected desktop/mobile routes. Both run before release.
+- **Forbidden:** vertical remapping (`cv2.remap`) or rescaling any person's hair, face, hands, sign, logo, or merchandise to remove navigation.
