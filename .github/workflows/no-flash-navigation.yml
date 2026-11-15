@@ -1,0 +1,29 @@
+name: No-flash storefront route transitions
+on:
+  push:
+    branches: ['fix/hero-transition-no-flash']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  transition:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Check image retention on slow routes and rapid navigation
+        run: node scripts/verify-no-flash-navigation.cjs
+      - name: Preserve transition report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: no-flash-navigation-qa
+          path: artifacts/no-flash-navigation.json
+          if-no-files-found: ignore
