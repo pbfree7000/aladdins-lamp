@@ -58,7 +58,7 @@ async function main(){
     }else{
      assert.equal(state.paintedNavVisible,false,label+' tiny picture links should not be touchscreen targets');
      assert.ok(state.exploreVisible,label+' phone Explore missing');
-     assert.ok(state.exploreBottom>state.viewportHeight/2,label+' mobile Explore overlaps header');
+     assert.ok(state.exploreBottom<state.viewportHeight/3,label+' mobile Explore should be over top artwork, never article text');
      assert.equal(state.searchVisible,false,label+' painted search overlay should not cover mobile hero');
     }
     if((width===375||width===1440)&&(route==='journal'||route==='hunt'||route==='home')){
