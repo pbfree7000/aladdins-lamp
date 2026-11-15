@@ -43,7 +43,7 @@ const article={title:'A remarkable silver find',category:'The Silver Vault',exce
 test('reject unauthenticated and forged Access tokens',async()=>{
  const noAuth=await worker.fetch(new Request('https://journal-api.aladdinslamp.xyz/api/me'),env);
  assert.equal(noAuth.status,401);
- const r=request('/api/me');r.headers.set('Cf-Access-Jwt-Assertion',jwt('mike@example.com').replace(/.$/,'x'));
+ const r=request('/api/me');const parts=jwt('mike@example.com').split('.');parts[2]=(parts[2][0]==='A'?'B':'A')+parts[2].slice(1);r.headers.set('Cf-Access-Jwt-Assertion',parts.join('.'));
  assert.equal((await worker.fetch(r,env)).status,401);
 });
 test('author identity and same-origin writing desk',async()=>{
