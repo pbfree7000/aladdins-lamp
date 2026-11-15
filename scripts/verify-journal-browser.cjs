@@ -81,10 +81,17 @@ async function main(){
   await desk.locator('.story-photo button').filter({hasText:'↓ Move'}).click();
   await desk.getByText('Saved securely').waitFor({timeout:12000});
   assert.equal(articles.size,1,'Autosave should persist exactly one draft');
-  const serialized=[...articles.values()][0].body;
+  let serialized='',blocks=[];
+  for(let tries=0;tries<90;tries++){
+   serialized=[...articles.values()][0].body||'';
+   if(serialized.startsWith('ALADDIN_BLOCKS_V1:')){
+    blocks=JSON.parse(serialized.slice('ALADDIN_BLOCKS_V1:'.length));
+    if(blocks.some(b=>b.kind==='image'&&b.id===photoId&&b.align==='right'&&b.size==='small'))break
+   }
+   await new Promise(resolve=>setTimeout(resolve,100));
+  }
   assert.ok(serialized.startsWith('ALADDIN_BLOCKS_V1:'),'Editor should persist structured body');
-  const blocks=JSON.parse(serialized.slice('ALADDIN_BLOCKS_V1:'.length));
-  assert.ok(blocks.some(b=>b.kind==='image'&&b.id===photoId&&b.align==='right'&&b.size==='small'),'Inline photo layout must survive autosave');
+  assert.ok(blocks.some(b=>b.kind==='image'&&b.id===photoId&&b.align==='right'&&b.size==='small'),'Inline photo layout must survive autosave: '+JSON.stringify(blocks));
   await desk.locator('#previewBtn').click();
   await desk.locator('#preview h1').getByText('QA editor story').waitFor({timeout:12000});
   await desk.locator('#cloudPublishBtn').click();
