@@ -1,0 +1,31 @@
+name: Journal editor syntax check
+on:
+  push:
+    paths:
+      - 'writing-desk/**'
+      - 'backend/**'
+      - '.github/workflows/journal-editor-check.yml'
+  pull_request:
+    paths:
+      - 'writing-desk/**'
+      - 'backend/**'
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check backend syntax
+        run: node --check backend/src/worker.js
+      - name: Check inline editor script
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('writing-desk/index.html','utf8');
+          const matches=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
+          if(matches.length!==1)throw Error('Expected exactly one editor script');
+          fs.writeFileSync('/tmp/aladdin-editor.cjs',matches[0][1]);
+          NODE
+          node --check /tmp/aladdin-editor.cjs
