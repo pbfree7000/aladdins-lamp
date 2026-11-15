@@ -18,10 +18,11 @@ The Fresh Finds mobile art lives at repository root, **not** in `assets/`. Do no
 
 ## Navigation contract
 
-- The approved artwork **already contains its main navigation**. Never render another visible `.art-nav` above it. The hero begins at the top of the page. The actual desktop navigation is a set of transparent, keyboard-focusable `.image-nav` links aligned over the painted labels; the search input is aligned over the one painted search field.
+- The approved artwork **already contains inconsistent painted navigation labels**. Never add a second `.art-nav` above the hero, and never hide all actual section labels behind transparent hitboxes. The hero starts at the top of the page. Desktop uses a single **visible**, keyboard-focusable `.image-nav .illustrated-links` overlay within the artwork's original header band, with seven section names, a highlighted active route, and an Explore menu trigger. It masks the conflicting painted wording without covering the central genie logo.
+- Home uses a wider, single-row maroon/gold menu matching its original framed header. The six other illustrated rooms use a compact two-row menu fitted to the space left of their painted genie logos; Silver and Apothecary use artwork-specific widths. The existing painted search field remains available for the six illustrated interior rooms, with search accessible from Explore on Home.
 - On mobile, the illustrated phone artwork's hamburger area has an accessible tap target. The home poster uses a small top-left icon. `Explore` opens the full accessible menu and search without creating a second visible navigation bar or overlapping article text.
 - At tablet sizes, use the Explore control rather than tiny desktop artwork labels. Escape and outside clicks dismiss the menu.
-- Navigation tests must reject **zero/one extra bars based on appearance**, not merely test `nav` element counts: assert `.art-nav` count is zero, hero top is unshifted, photo nav links navigate, search submits, and mobile Explore operates.
+- Navigation tests must check the **visible result**, not merely `nav` counts: assert `.art-nav` count is zero, hero top is unshifted, the seven labels have nonzero font size and readable color, the active tab is highlighted, desktop tabs navigate, search submits, and mobile Explore operates. Include screenshots of Home, Silver, Apothecary, Treasure Hunt and Journal on 1440px and phone layouts.
 - Mobile Silver and Apothecary subcategory links are explicit, touch-friendly pills below the illustrated hero.
 - All category links, branded home link, journal collections, search, and contact links should remain usable without JavaScript console errors or page-wide horizontal scrolling.
 
