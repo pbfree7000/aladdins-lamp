@@ -1,0 +1,13 @@
+import {readFileSync, mkdirSync, writeFileSync} from 'node:fs';
+import {dirname, resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=dirname(fileURLToPath(import.meta.url));
+const source=readFileSync(resolve(root,'src/worker.js'),'utf8');
+const editor=readFileSync(resolve(root,'../writing-desk/index.html'),'utf8');
+const marker='const EDITOR_HTML = null;';
+if(!source.includes(marker))throw Error('Editor bundle insertion point is missing');
+if(!editor.includes('id="connectBtn"')||!editor.includes('id="cloudPublishBtn"'))throw Error('Incomplete Writing Desk');
+const bundled=source.replace(marker,'const EDITOR_HTML = '+JSON.stringify(editor)+';');
+mkdirSync(resolve(root,'dist'),{recursive:true});
+writeFileSync(resolve(root,'dist/worker.js'),bundled);
+console.log('Built secure journal API + Writing Desk ('+bundled.length+' bytes)');
