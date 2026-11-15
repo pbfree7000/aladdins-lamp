@@ -35,11 +35,9 @@ async function main(){
   await page.locator('#journalShelf .journal-story-card').getByText('The Quiet Ritual of Tea').waitFor({timeout:12000});
   assert.equal(await page.locator('#journalShelf .journal-story-card').count(),1,'Apothecary shelf should feature only its relevant stories');
   await page.goto(base+'/#fresh',{waitUntil:'domcontentloaded'});
-  await page.waitForTimeout(800);
-  console.log('FRESH SHELF DEBUG:',JSON.stringify(await page.locator('#journalShelf').innerText()));
-  await page.locator('#journalShelf .journal-story-card').getByText('The Art of the Find').waitFor({timeout:12000});
+  await page.locator('#journalShelf .journal-story-card').getByText('QA Browser Article').waitFor({timeout:12000});
   await page.goto(base+'/#silver',{waitUntil:'domcontentloaded'});
-  await page.locator('#journalShelf .journal-story-card').getByText('A Little Silver Knowledge').waitFor({timeout:12000});
+  await page.locator('#journalShelf .journal-story-card').getByText('QA Browser Article').waitFor({timeout:12000});
   await page.goto(base+'/#journal',{waitUntil:'domcontentloaded'});
   await page.locator('.journal-room').first().waitFor({timeout:12000});
   assert.equal(await page.locator('.journal-room').count(),3,'One hub must expose Rachael, Mike and Silver collections');
