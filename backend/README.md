@@ -41,3 +41,11 @@ Current UX does not yet support collaborative simultaneous editing, server-side 
 6. Record deployment version, KV key, Worker bindings, Access policy, D1 database ID, and a tested rollback before transferring operational maintenance.
 
 **Do not merge draft PR #1 wholesale without acceptance.** Keep the creative storefront and approved artwork under separate design ownership; product catalog/data/photos are managed by Mike's agent.
+
+## Journal cover photograph upload (15 November 2026)
+
+Photo upload now uses a dedicated R2 bucket `aladdins-lamp-journal-photos` and the `journal_photos` D1 table. Both the **private API** and the **public feed** Workers require the R2 binding `JOURNAL_PHOTOS`. Keep it bound when redeploying either script. The private API accepts only verified JPG, PNG, WebP or GIF files up to 5 MB, tied to a draft owned by the authenticated author (or overseen by the owner). Private image previews require Access authentication. The public feed returns image bytes only if the linked story is published. Its endpoint is `/media/:photoId`.
+
+The protected Writing Desk now supports choosing a cover photograph from laptop or phone files, taking a photo on a mobile camera, dropping a photo onto the cover field, and pasting an image while the cover field is focused. Image uploads are **cover images only**; multiple inline story images and full revision history remain future work. A real Mike/Rachael phone and laptop upload acceptance check is still required.
+
+Deployment: `backend/wrangler.toml` includes the **private API** R2 binding. The separate **public feed** Worker is deployed with its own `DB` D1 and `JOURNAL_PHOTOS` R2 bindings; preserve these when publishing the read-only Worker. Do not use the unrelated BINDEX R2 bucket or place journal photos in product-image storage.
