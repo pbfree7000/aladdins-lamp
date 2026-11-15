@@ -1,4 +1,4 @@
-name: Production visual QA — seven desktop pages
+name: Production visual QA — desktop, tablet and phones
 on:
   workflow_run:
     workflows: ["Deploy static site to GitHub Pages"]
@@ -23,7 +23,7 @@ jobs:
         run: |
           npm install --no-save playwright@1.58.2
           npx playwright install --with-deps chromium
-      - name: Verify production and capture seven screenshots
+      - name: Verify all seven production routes and capture desktop/mobile screenshots
         env:
           SITE_URL: https://aladdinslamp.xyz/
         run: node scripts/verify-desktop-pages.cjs
@@ -31,7 +31,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: desktop-production-qa-${{ github.run_id }}
+          name: storefront-production-qa-${{ github.run_id }}
           path: artifacts/
           if-no-files-found: warn
           retention-days: 30
