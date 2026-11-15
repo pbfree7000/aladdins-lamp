@@ -21,8 +21,8 @@ class FakeD1{
  constructor(){this.rows=new Map()}
  prepare(sql){
   const prepared={bind:(...p)=>({
-   first:async()=>{if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d?.owner_email===p[1]?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
-   all:async()=>{if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
+   first:async()=>{if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d&&(p.length===1||d.owner_email===p[1])?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
+   all:async()=>{if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes('SELECT * FROM articles ORDER BY'))return {results:[...this.rows.values()].map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
    run:async()=>{let changes=0;
     if(sql.startsWith('INSERT INTO articles')){const [id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at]=p;this.rows.set(id,{id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at,slug:null,published_at:null});changes=1}
     else if(sql.includes("SET status='published'")){const [slug,published_at,updated_at,id,owner_email,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status==='draft'&&d.updated_at===expected){Object.assign(d,{status:'published',slug,published_at,updated_at});changes=1}}
@@ -35,7 +35,7 @@ class FakeD1{
  }
 }
 const DB=new FakeD1();
-const env={DB,EDITOR_ASSETS:{get:async()=>'<html><body>Publish online</body></html>'},ACCESS_TEAM_DOMAIN:'unit.cloudflareaccess.com',ACCESS_AUD:'journal-test-aud',ALLOWED_AUTHORS:'mike@example.com:Mike,rachael@example.com:Rachael',ALLOWED_ORIGIN:'https://aladdinslamp.xyz'};
+const env={DB,EDITOR_ASSETS:{get:async()=>'<html><body>Publish online</body></html>'},ACCESS_TEAM_DOMAIN:'unit.cloudflareaccess.com',ACCESS_AUD:'journal-test-aud',OWNER_EMAIL:'owner@example.com',ALLOWED_AUTHORS:'mike@example.com:Mike,rachael@example.com:Rachael',ALLOWED_ORIGIN:'https://aladdinslamp.xyz'};
 function request(path,method='GET',email='mike@example.com',payload,origin){
  return new Request('https://journal-api.aladdinslamp.xyz'+path,{method,headers:{'Cf-Access-Jwt-Assertion':jwt(email),...(payload?{'content-type':'application/json'}:{}),...(origin?{Origin:origin}:{})},body:payload?JSON.stringify(payload):undefined})
 }
@@ -79,6 +79,22 @@ test('create, retrieve and revise privately with cross-author protection',async(
  assert.equal(published.status,200);
  assert.equal((await published.json()).status,'published');
  assert.equal((await worker.fetch(request('/api/articles/'+c.id,'PUT','mike@example.com',{...article,expectedUpdatedAt:c.updated_at}),env)).status,409);
+});
+test('owner can oversee both authors without impersonating them',async()=>{
+ const mike=await worker.fetch(request('/api/articles','POST','mike@example.com',article),env);
+ const rachael=await worker.fetch(request('/api/articles','POST','rachael@example.com',{...article,title:'Rachael finds treasure'}),env);
+ assert.equal(mike.status,201);assert.equal(rachael.status,201);
+ const me=await (await worker.fetch(request('/api/me','GET','owner@example.com'),env)).json();
+ assert.equal(me.role,'owner');assert.equal(me.author,'Owner');
+ assert.equal((await worker.fetch(request('/api/articles','POST','owner@example.com',article),env)).status,403);
+ const overview=await (await worker.fetch(request('/api/articles','GET','owner@example.com'),env)).json();
+ assert.ok(overview.articles.some(d=>d.author==='Mike'));
+ assert.ok(overview.articles.some(d=>d.author==='Rachael'));
+ const r=await rachael.json();
+ assert.equal((await worker.fetch(request('/api/articles/'+r.id,'DELETE','owner@example.com'),env)).status,403);
+ assert.equal((await worker.fetch(request('/api/articles/'+r.id,'PUT','owner@example.com',{...article,title:'Reviewed by owner',expectedUpdatedAt:r.updated_at}),env)).status,200);
+ const latest=(await (await worker.fetch(request('/api/articles','GET','owner@example.com'),env)).json()).articles.find(d=>d.id===r.id);
+ assert.equal((await worker.fetch(request('/api/articles/'+r.id+'/publish','POST','owner@example.com',{expectedUpdatedAt:latest.updated_at}),env)).status,200);
 });
 test('public feed includes only published fields and no draft ownership',async()=>{
  const a=await publicFeed.fetch(new Request('https://journal-feed.aladdinslamp.xyz/api/articles'),{DB});
