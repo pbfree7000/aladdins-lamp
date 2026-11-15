@@ -105,6 +105,20 @@ async function main(){
   await page.locator('#mobileSearchForm').press('Enter');
   assert.equal(new URL(page.url()).hash.startsWith('#search/silver'),true,'Mobile search should submit');
   assert.equal(await page.locator('#menu').isVisible(),false,'Explore menu must close on route change');
+
+  await page.goto(base+'/#home',{waitUntil:'domcontentloaded'});
+  await page.locator('.room-list a[href="#silver"]').click();
+  assert.equal(new URL(page.url()).hash,'#silver','Home room navigation should open the Silver Vault');
+  await page.goto(base+'/#apothecary',{waitUntil:'domcontentloaded'});
+  await page.locator('.subcategory-mobile a[href="#apothecary/herbal-teas"]').click();
+  assert.equal(new URL(page.url()).hash,'#apothecary/herbal-teas','Apothecary category link should open the intended collection');
+  assert.equal(await page.locator('#catalog .catalog-grid[data-product-mount]').count(),1,'Product integration mount must remain intact');
+  await page.goto(base+'/#home',{waitUntil:'domcontentloaded'});
+  await page.locator('.art-nav .nav-links a[href="#journal"]').click();
+  assert.equal(new URL(page.url()).hash,'#journal','Mobile top navigation should open the Journal');
+  await page.locator('#menuToggle').click();
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#menu').isVisible(),false,'Escape should dismiss the mobile Explore menu');
   console.log('PASS: '+checked+' responsive hero/navigation checks across five widths and seven routes, plus mobile search');
   assert.deepEqual(errors,[],'Public site JavaScript errors');
   console.log('PASS: journal feed, static fallback, article routes, search and six shop routes');
