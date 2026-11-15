@@ -34,6 +34,9 @@ async function main(){
   await page.goto(base+'/#apothecary',{waitUntil:'domcontentloaded'});
   await page.locator('#journalShelf .journal-story-card').getByText('The Quiet Ritual of Tea').waitFor({timeout:12000});
   assert.equal(await page.locator('#journalShelf .journal-story-card').count(),1,'Apothecary shelf should feature only its relevant stories');
+  const cardColors=await page.locator('#journalShelf .journal-story-card').first().evaluate(e=>({background:getComputedStyle(e).backgroundImage,color:getComputedStyle(e).color}));
+  assert.match(cardColors.background,/gradient/i,'Embedded journal cards must have an opaque parchment background for readable copy');
+  assert.equal(cardColors.color,'rgb(60, 45, 33)','Embedded journal card text should be dark brown on parchment');
   await page.goto(base+'/#fresh',{waitUntil:'domcontentloaded'});
   await page.locator('#journalShelf .journal-story-card').getByText('QA Browser Article').waitFor({timeout:12000});
   await page.goto(base+'/#silver',{waitUntil:'domcontentloaded'});
