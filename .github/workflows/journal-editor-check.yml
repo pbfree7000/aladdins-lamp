@@ -48,3 +48,11 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Test public journal and author writing flow
         run: node scripts/verify-journal-browser.cjs
+      - name: Preserve responsive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-responsive-review-${{ github.run_id }}
+          path: artifacts/responsive/
+          if-no-files-found: ignore
+          retention-days: 30
