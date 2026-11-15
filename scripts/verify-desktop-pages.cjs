@@ -40,8 +40,9 @@ const viewports = [
        imageUrl:image?.currentSrc||'',heroTop:r?.top||0,
        extraNavCount:document.querySelectorAll('.art-nav').length,
        paintedNavActive:!!painted&&getComputedStyle(painted).display!=='none',
-       paintedLinkCount:painted?.querySelectorAll('.painted-link').length||0,
-       navLinksClickable:painted?[...painted.querySelectorAll('.painted-link')].every(a=>getComputedStyle(a).pointerEvents==='auto'):false,
+       paintedLinkCount:painted?.querySelectorAll('.illustrated-links a').length||0,
+       navLinksClickable:painted?[...painted.querySelectorAll('.illustrated-links a')].every(a=>getComputedStyle(a).pointerEvents==='auto'&&getComputedStyle(a).fontSize!=='0px'&&a.getBoundingClientRect().width>40):false,
+       activeLink:painted?.querySelector('.illustrated-links a[aria-current="page"]')?.textContent||'',
        imageSearchVisible:!!form&&getComputedStyle(form).display!=='none',
        exploreVisible:!!toggle&&getComputedStyle(toggle).display!=='none'&&toggle.getBoundingClientRect().height>=40,
        exploreBottom:toggle?.getBoundingClientRect().bottom||0,
@@ -52,8 +53,8 @@ const viewports = [
      if(!c.imageLoaded)issues.push('Hero artwork failed to load');
      if(c.extraNavCount!==0||c.heroTop>3)issues.push('Duplicate navigation above approved artwork');
      if(c.horizontalOverflow)issues.push('Horizontal overflow');
-     if(viewport.width>980){
-      if(!c.paintedNavActive||c.paintedLinkCount!==7||!c.navLinksClickable)issues.push('Painted desktop navigation is not functional');
+     if(viewport.width>=1280){
+      if(!c.paintedNavActive||c.paintedLinkCount!==7||!c.navLinksClickable||!c.activeLink)issues.push('Visible desktop navigation is not readable or functional');
       if(!c.imageSearchVisible)issues.push('Illustrated desktop search is not functional');
       if(c.exploreVisible)issues.push('Duplicate floating Explore control on desktop');
      }else{
@@ -83,9 +84,9 @@ const viewports = [
    try{
     await page.goto(new URL(base+'#journal').toString(),{waitUntil:'domcontentloaded'});
     if(width>980){
-     await page.locator('.image-nav .painted-link[href="#silver"]').click();
+     await page.locator('.image-nav .illustrated-links a[href="#silver"]').click();
      if(new URL(page.url()).hash!=='#silver')issues.push('Painted Silver Vault link failed');
-     await page.locator('.image-menu-hotspot').click();
+     await page.locator('.illustrated-more').click();
      if(!(await page.locator('#menu').isVisible()))issues.push('Painted hamburger failed to open menu');
      await page.keyboard.press('Escape');
      await page.locator('.hero>.search-form input[type="search"]').fill('silver');
