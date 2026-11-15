@@ -75,6 +75,36 @@ const viewports = [
    }
   }
 
+
+  // Exercise the real navigation in the image, not merely its hidden DOM structure.
+  for(const width of [375,1440]){
+   const page=await browser.newPage({viewport:{width,height:900}});
+   const issues=[];
+   try{
+    await page.goto(new URL(base+'#journal').toString(),{waitUntil:'domcontentloaded'});
+    if(width>980){
+     await page.locator('.image-nav .painted-link[href="#silver"]').click();
+     if(new URL(page.url()).hash!=='#silver')issues.push('Painted Silver Vault link failed');
+     await page.locator('.image-menu-hotspot').click();
+     if(!(await page.locator('#menu').isVisible()))issues.push('Painted hamburger failed to open menu');
+     await page.keyboard.press('Escape');
+     await page.locator('.hero>.search-form input[type="search"]').fill('silver');
+     await page.locator('.hero>.search-form input[type="search"]').press('Enter');
+     if(new URL(page.url()).hash!=='#search/silver')issues.push('Painted search field failed');
+    }else{
+     await page.locator('#menuToggle').click();
+     if(!(await page.locator('#menu').isVisible()))issues.push('Mobile painted hamburger failed');
+     await page.locator('#mobileSearch').fill('silver');
+     await page.locator('#mobileSearch').press('Enter');
+     if(new URL(page.url()).hash!=='#search/silver')issues.push('Mobile search failed');
+    }
+   }catch(e){issues.push('Interaction error: '+e.message)}
+   if(issues.length)failed=true;
+   report.push({viewport:'interaction-'+width,width,route:'nav-controls',issues});
+   console.log('navigation controls '+width+': '+(issues.length?'FAIL '+issues.join('; '):'PASS'));
+   await page.close();
+  }
+
   // Also verify the two public example journal articles, including their actual image URLs.
   for(const width of [375,1440]){
    for(const slug of ['sample-rachaels-apothecary-tea-tray','sample-mikes-silver-field-notes']){
