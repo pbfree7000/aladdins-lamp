@@ -20,7 +20,7 @@ function jwt(email){
 class FakeD1{
  constructor(){this.rows=new Map()}
  prepare(sql){
-  return {bind:(...p)=>({
+  const prepared={bind:(...p)=>({
    first:async()=>{if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d?.owner_email===p[1]?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
    all:async()=>{if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
    run:async()=>{let changes=0;
@@ -31,7 +31,7 @@ class FakeD1{
     else throw Error('Unsupported run SQL: '+sql);
     return {success:true,meta:{changes}}
    }
-  })}
+  })};prepared.all=()=>prepared.bind().all();return prepared
  }
 }
 const DB=new FakeD1();
