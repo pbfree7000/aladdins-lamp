@@ -1,5 +1,33 @@
 [
   {
+    "slug": "sample-rachaels-apothecary-tea-tray",
+    "title": "The Little Ritual of a Tea Tray",
+    "date": "2026-11-15",
+    "author": "Aladdin’s Lamp Editorial Studio",
+    "category": "Rachael’s Apothecary",
+    "status": "published",
+    "sample": true,
+    "sampleFor": "rachael",
+    "excerpt": "A demonstration of how Rachael could turn a simple cup of tea, a botanical detail, and a few photographs into an inviting shop story.",
+    "cover": "https://images.unsplash.com/photo-1694035449534-076f6ef78d33?auto=format&fit=crop&w=1200&q=80",
+    "body": "ALADDIN_BLOCKS_V1:[{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"There is a small pleasure in putting together a tea tray: the familiar cup, the folded linen, the glass jar that catches the light. Nothing needs to be elaborate. It is the attention to ordinary things that makes the moment feel special.\"},{\"kind\":\"text\",\"style\":\"heading\",\"text\":\"Begin with what you can see\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"A story for Rachael’s Apothecary might begin with one photograph of a botanical arrangement. From there, the writing can describe texture, color, scent, or a personal favorite—without making medicinal claims.\"},{\"kind\":\"sample-photo\",\"id\":\"rachael-tea\",\"caption\":\"Illustrative photograph: a quiet tea ritual, not a product currently offered for sale.\",\"size\":\"medium\",\"align\":\"center\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"Place the photograph wherever it makes sense. It can sit between paragraphs, carry a caption, or become the starting point for a new section.\"},{\"kind\":\"text\",\"style\":\"heading\",\"text\":\"Objects make good stories\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"An old cup can invite a memory; a sprig of rosemary can lead to a note about a garden; a little jar can introduce the appeal of thoughtful everyday rituals. Readers come for the human voice behind the shop, not a sales pitch.\"},{\"kind\":\"text\",\"style\":\"quote\",\"text\":\"The most memorable part of a shop is often the person who notices the details.\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"This is a demonstration article, written to show the finished layout. Rachael can replace it with her own words and photographs from her phone, add more pictures, and publish through the private Writing Desk.\"}]",
+    "photoCredit": "Demonstration imagery: Rebekah Vos and Egor Komarov / Unsplash."
+  },
+  {
+    "slug": "sample-mikes-silver-field-notes",
+    "title": "The Silver Spoon That Makes You Look Twice",
+    "date": "2026-11-15",
+    "author": "Aladdin’s Lamp Editorial Studio",
+    "category": "The Silver Vault",
+    "status": "published",
+    "sample": true,
+    "sampleFor": "mike",
+    "excerpt": "A demonstration of Mike’s broader field-notes journal: a curious object, a few observations, and close-up photography telling the story.",
+    "cover": "https://images.unsplash.com/photo-1574501668395-10ac691bc956?auto=format&fit=crop&w=1200&q=80",
+    "body": "ALADDIN_BLOCKS_V1:[{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"Sometimes the object that holds your attention is not the grandest thing in the cabinet. It might be a spoon with an unusual handle, a softened edge, or wear that suggests it was used and enjoyed.\"},{\"kind\":\"text\",\"style\":\"heading\",\"text\":\"Look at the detail first\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"A close photograph can tell a reader where to look. Is there engraving? A repair? A maker’s mark? Those small observations turn a simple find into a story worth sharing.\"},{\"kind\":\"sample-photo\",\"id\":\"mike-spoon\",\"caption\":\"Illustrative close-up photograph. This is not a verified Aladdin’s Lamp inventory item.\",\"size\":\"medium\",\"align\":\"right\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"A single mark rarely settles the whole question of material, maker, or age. Sterling silver and silverplate are different, and the meaning of a mark depends on where and when an object was made. When in doubt, describe what is visible rather than guessing at provenance or value.\"},{\"kind\":\"text\",\"style\":\"heading\",\"text\":\"The freedom of field notes\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"Mike’s journal does not have to stay with silver. One day it can be about old tools, the next about an amusing collectible, a useful restoration tip, or a discovery made while hunting for something entirely different.\"},{\"kind\":\"text\",\"style\":\"quote\",\"text\":\"The best finds usually reward a second look.\"},{\"kind\":\"text\",\"style\":\"paragraph\",\"text\":\"This is a sample story with illustrative images, not an account of an actual purchase or a listing for sale. Mike can swap in real photographs, add or move them between paragraphs, and publish his own account when he is ready.\"}]",
+    "photoCredit": "Demonstration imagery: Wonderlane and COPPERTIST WU / Unsplash."
+  },
+  {
     "slug": "the-art-of-the-find",
     "title": "The Art of the Find",
     "date": "2026-11-14",
