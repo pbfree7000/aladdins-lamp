@@ -126,7 +126,25 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
  box-shadow:0 3px 12px #09070585;
  pointer-events:auto
 }
-.hero[data-page="silver"] .illustrated-links{width:35.5%}
+.hero[data-page="silver"] .illustrated-links{width:31.5%}
+.hero[data-page="fresh"] .illustrated-links{width:37.5%}
+.hero[data-page="hunt"] .illustrated-links,
+.hero[data-page="journal"] .illustrated-links,
+.hero[data-page="apothecary"] .illustrated-links,
+.hero[data-page="underground"] .illustrated-links{width:38.8%}
+/* Home has a full-width painted navigation, unlike the other six illustrations.
+   Cover only its existing maroon menu pill, leaving its golden frame and central logo intact. */
+.hero[data-page="home"] .illustrated-links{
+ left:5.25%;top:1.6vw;width:77.9%;height:3.85vw;
+ display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:1fr;
+ background:linear-gradient(180deg,#41110d,#270807);
+ border:1px solid #d5a057;border-radius:36px;box-shadow:inset 0 0 0 1px #713920;
+ padding:2px 5px;gap:2px
+}
+.hero[data-page="home"] .illustrated-links a,.hero[data-page="home"] .illustrated-links button{
+ font-size:clamp(11px,1.09vw,20px);padding:3px 4px
+}
+.hero[data-page="home"]>.search-form{display:none}
 .image-nav .illustrated-links a,.image-nav .illustrated-links button{
  display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;
  border:1px solid transparent;border-radius:4px;background:transparent;color:#f3dcb0;
