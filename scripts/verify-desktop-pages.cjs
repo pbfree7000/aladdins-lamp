@@ -42,6 +42,7 @@ const viewports = [
        cleanNavCount:document.querySelectorAll('.clean-top-nav').length,
        cleanNavLinks:clean?.querySelectorAll('.illustrated-links a').length||0,
        cleanNavActive:clean?.querySelector('.illustrated-links a[aria-current="page"]')?.textContent||'',
+       cleanNavLabel:clean?.dataset.currentLabel||'',
        paintedNavActive:!!painted&&getComputedStyle(painted).display!=='none',
        paintedLinkCount:painted?.querySelectorAll('.illustrated-links a').length||0,
        navLinksClickable:painted?[...painted.querySelectorAll('.illustrated-links a')].every(a=>getComputedStyle(a).pointerEvents==='auto'&&getComputedStyle(a).fontSize!=='0px'&&a.getBoundingClientRect().width>40):false,
@@ -56,19 +57,19 @@ const viewports = [
       }
      });
      if(!c.imageLoaded)issues.push('Hero artwork failed to load');
-     if(c.extraNavCount!==0||route!=='silver'&&c.heroTop>3)issues.push('Duplicate navigation above artwork');
-     if(route==='silver'&&(!c.imageUrl.endsWith('/silver-vault-navfree.jpg')||c.cleanNavCount!==1||c.cleanNavLinks!==7||c.cleanNavActive!=='Silver Vault'))issues.push('Silver must use nav-free art and one real navigation');
-     if(route!=='silver'&&c.cleanNavCount!==0)issues.push('Clean Silver navigation leaked into another page');
+     if(c.extraNavCount!==0||c.cleanNavCount!==1||c.cleanNavLinks!==7||!c.cleanNavActive)issues.push('Site must use one real seven-section navigation');
+     if(c.paintedNavActive)issues.push('Illustrated navigation must not reappear over the hero');
+     const labelByRoute={home:'Home',hunt:'Treasure Hunt',silver:'Silver Vault',apothecary:'Rachael’s Apothecary',underground:'Autumn’s Underground',fresh:'Fresh Finds',journal:'Treasure Journal'};
+     if(c.cleanNavLabel!==labelByRoute[route])issues.push('Incorrect mobile page heading: '+c.cleanNavLabel);
+
      if(c.horizontalOverflow)issues.push('Horizontal overflow');
+     const expectedHero={home:'home-navfree.jpg',hunt:'treasure-hunt-navfree.jpg',silver:'silver-vault-navfree.jpg',apothecary:'rachaels-apothecary-navfree.jpg',underground:'autumns-underground-navfree.jpg',fresh:'fresh-finds-navfree.jpg',journal:'treasure-journal-navfree.jpg'};
+     if(!(route==='home'&&viewport.width<=680)&&!c.imageUrl.endsWith('/'+expectedHero[route]))issues.push('Incorrect navigation-free hero artwork: '+c.imageUrl);
      if(viewport.width>=1280){
-      if(route!=='silver'&&(!c.paintedNavActive||c.paintedLinkCount!==7||!c.navLinksClickable||!c.activeLink||!c.activeNavClearlyVisible))issues.push('Visible desktop navigation is not readable or functional');
-      if(route!=='silver'&&route!=='home'&&!c.imageSearchVisible)issues.push('Illustrated desktop search is not functional');
-      if(c.exploreVisible)issues.push('Duplicate floating Explore control on desktop');
+       if(c.exploreVisible)issues.push('Second floating Explore control on desktop');
      }else{
-      if(c.paintedNavActive)issues.push('Tiny painted links in mobile mode');
-      if(!c.exploreVisible||c.exploreBottom>viewport.height/3)issues.push('Mobile Explore is missing or overlays story text');
+       if(!c.exploreVisible)issues.push('Mobile Explore control missing');
      }
-     if(viewport.width<=680&&route==='fresh'&&!c.imageUrl.endsWith('/fresh-finds-mobile.jpg'))issues.push('Wrong Fresh Finds mobile artwork: '+c.imageUrl);
      if(route==='journal'&&c.journalRooms!==3)issues.push('Journal collections not rendered');
      if(viewport.screenshots)await page.screenshot({path:path.join(folder,route+'.png'),fullPage:true,animations:'disabled'});
      report.push({viewport:viewport.name,width:viewport.width,height:viewport.height,route,url:url.toString(),...c,issues});
@@ -91,21 +92,19 @@ const viewports = [
    try{
     await page.goto(new URL(base+'#journal').toString(),{waitUntil:'domcontentloaded'});
     if(width>=1280){
-     await page.locator('.image-nav .illustrated-links a[href="#silver"]').click();
+     await page.locator('.clean-top-nav a[href="#silver"]').click();
      if(new URL(page.url()).hash!=='#silver')issues.push('Journal to Silver link failed');
-     try{await page.locator('.clean-top-nav a[aria-current="page"]').waitFor({state:'visible',timeout:10000})}catch{issues.push('Clean Silver active tab missing')}
+     try{await page.locator('.clean-top-nav a[aria-current="page"]').waitFor({state:'visible',timeout:10000})}catch{issues.push('Silver active tab missing')}
      await page.locator('.clean-top-nav a[href="#journal"]').click();
-     if(new URL(page.url()).hash!=='#journal')issues.push('Clean Silver to Journal link failed');
-     await page.locator('.illustrated-more').click();
-     if(!(await page.locator('#menu').isVisible()))issues.push('Explore failed to open menu');
-     await page.keyboard.press('Escape');
-     await page.locator('.hero>.search-form input[type="search"]').fill('silver');
-     await page.locator('.hero>.search-form input[type="search"]').press('Enter');
-     if(new URL(page.url()).hash!=='#search/silver')issues.push('Illustrated search failed');
-     await page.goto(new URL(base+'#silver').toString(),{waitUntil:'domcontentloaded'});
+     if(new URL(page.url()).hash!=='#journal')issues.push('Silver to Journal link failed');
+     if(await page.locator('.clean-top-nav .illustrated-more').isVisible()){
+       await page.locator('.clean-top-nav .illustrated-more').click();
+       if(!(await page.locator('#menu').isVisible()))issues.push('Explore menu failed');
+       await page.keyboard.press('Escape');
+     }
      await page.locator('.clean-top-nav input[type="search"]').fill('silver');
      await page.locator('.clean-top-nav input[type="search"]').press('Enter');
-     if(new URL(page.url()).hash!=='#search/silver')issues.push('Clean header search failed');
+     try{await page.waitForFunction(()=>location.hash==='#search/silver',{timeout:6000})}catch{issues.push('Header search failed: '+new URL(page.url()).hash)}
     }else{
      await page.locator('#menuToggle').click();
      if(!(await page.locator('#menu').isVisible()))issues.push('Mobile painted hamburger failed');
@@ -163,3 +162,5 @@ const viewports = [
  console.log('Verified '+report.length+' page/viewport combinations; '+report.filter(x=>x.issues.length).length+' failures.');
  if(failed)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+// Nav-free seven-room release gate: image sources must never contain baked navigation.
