@@ -103,6 +103,8 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 }
 
 .journal-sample-credits{font:12px/1.55 system-ui,sans-serif;color:#7d5d38;margin:22px 0 8px;border-top:1px solid #c9a874;padding-top:10px}
+/* Hash routing must not scroll past illustrated navigation when opening the Journal home. */
+#journal{scroll-margin-top:200vh}
 /* Deliberately distinguish demonstration stories from actual author publications. */
 .journal-sample-tag{display:inline-block;align-self:flex-start;margin-bottom:4px;border:1px solid #926936;color:#765025;background:#f5e6c6;padding:5px 8px;font:700 10px/1.3 system-ui,sans-serif;letter-spacing:.095em}
 .journal-sample-banner{display:flex;flex-direction:column;gap:5px;margin:0 0 25px;padding:15px 18px;border-left:3px solid #a17c40;background:#e2c995;color:#563820}
@@ -121,12 +123,13 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
  position:absolute;left:0;top:0;width:40.5%;height:clamp(54px,4.5vw,90px);
  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
  align-items:stretch;padding:clamp(3px,.4vw,8px) clamp(4px,.55vw,11px);gap:2px 3px;
- background:linear-gradient(180deg,rgba(12,13,13,.98),rgba(17,19,17,.96));
+ background:linear-gradient(180deg,#0c0d0d,#111311);
  border-right:1px solid #634724;border-bottom:1px solid #bb8e4d;
  box-shadow:0 3px 12px #09070585;
  pointer-events:auto
 }
 .hero[data-page="silver"] .illustrated-links{width:31.5%}
+.hero[data-page="apothecary"] .illustrated-links{width:41%}
 .hero[data-page="fresh"] .illustrated-links{width:37.5%}
 .hero[data-page="hunt"] .illustrated-links,
 .hero[data-page="journal"] .illustrated-links,
@@ -135,7 +138,7 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 /* Home has a full-width painted navigation, unlike the other six illustrations.
    Cover only its existing maroon menu pill, leaving its golden frame and central logo intact. */
 .hero[data-page="home"] .illustrated-links{
- left:5.25%;top:1.6vw;width:77.9%;height:3.85vw;
+ left:5.0%;top:.55vw;width:80.5%;height:4.8vw;
  display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:1fr;
  background:linear-gradient(180deg,#41110d,#270807);
  border:1px solid #d5a057;border-radius:36px;box-shadow:inset 0 0 0 1px #713920;
@@ -148,7 +151,7 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 .image-nav .illustrated-links a,.image-nav .illustrated-links button{
  display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;
  border:1px solid transparent;border-radius:4px;background:transparent;color:#f3dcb0;
- font:italic 700 clamp(10px,.91vw,17px)/1.15 Georgia,serif;
+ font:italic 700 clamp(11px,.99vw,18px)/1.15 Georgia,serif;
  text-decoration:none;white-space:nowrap;text-align:center;overflow:hidden;
  text-overflow:ellipsis;padding:2px 3px;cursor:pointer
 }
