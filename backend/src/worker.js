@@ -19,18 +19,19 @@ async function identity(request,env){
  const key=await crypto.subtle.importKey('jwk',jwk,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
  if(!await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,bytes(parts[2]),new TextEncoder().encode(parts[0]+'.'+parts[1])))throw Error('Bad signature');
  const email=String(claims.email).toLowerCase();
+ if(email===String(env.OWNER_EMAIL||'').trim().toLowerCase())return {email,author:'Owner',role:'owner'};
  const entry=String(env.ALLOWED_AUTHORS||'').split(',').map(x=>x.trim()).find(x=>x.toLowerCase().startsWith(email+':'));
  if(!entry)throw Error('Author not permitted');
  const author=entry.slice(entry.indexOf(':')+1);
  if(!['Mike','Rachael'].includes(author))throw Error('Invalid author mapping');
- return {email,author};
+ return {email,author,role:'author'};
 }
 function validate(d){if(!d||typeof d!=='object'||Array.isArray(d))throw Error('Invalid story');const out={};for(const k of ['title','category','excerpt','body','cover']){if(d[k]!==undefined&&typeof d[k]!=='string')throw Error('Invalid '+k);out[k]=String(d[k]||'').trim()}if(out.title.length>200||out.category.length>100||out.excerpt.length>1000||out.body.length>100000||out.cover.length>2000)throw Error('Story too long');if(out.cover&&!/^https:\/\//i.test(out.cover))throw Error('Cover must be an HTTPS URL');return out}
 function slugify(s){return s.normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'story'}
 async function publishToDatabase(env,story,user,expectedUpdatedAt){
  const slug=slugify(story.title)+'-'+story.id.slice(0,8);
  const now=new Date().toISOString();
- const result=await env.DB.prepare("UPDATE articles SET status='published',slug=?,published_at=?,updated_at=? WHERE id=? AND owner_email=? AND status='draft' AND updated_at=?").bind(slug,now,now,story.id,user.email,expectedUpdatedAt).run();
+ const result=await env.DB.prepare("UPDATE articles SET status='published',slug=?,published_at=?,updated_at=? WHERE id=? AND owner_email=? AND status='draft' AND updated_at=?").bind(slug,now,now,story.id,story.owner_email,expectedUpdatedAt).run();
  if(!result.success||result.meta?.changes!==1)return null;
  return {status:'published',slug};
 }
@@ -45,13 +46,14 @@ export default {async fetch(request,env){
  if(path==='/desk'&&request.method==='GET'){const editorHtml=await env.EDITOR_ASSETS?.get('desk-v1');return new Response(editorHtml||'The editor assets have not been uploaded',{status:editorHtml?200:503,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY','content-security-policy':"default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'"}})}
  if(path==='/config.json'&&request.method==='GET')return json({apiUrl:new URL(request.url).origin},200,corsHeaders);
  if(path==='/api/me'&&request.method==='GET')return json({...user,publishEnabled:true},200,corsHeaders);
- if(path==='/api/articles'&&request.method==='GET'){const data=await env.DB.prepare('SELECT * FROM articles WHERE owner_email=? ORDER BY updated_at DESC').bind(user.email).all();return json({articles:data.results},200,corsHeaders)}
+ if(path==='/api/articles'&&request.method==='GET'){const data=user.role==='owner'?await env.DB.prepare('SELECT * FROM articles ORDER BY updated_at DESC').all():await env.DB.prepare('SELECT * FROM articles WHERE owner_email=? ORDER BY updated_at DESC').bind(user.email).all();return json({articles:data.results},200,corsHeaders)}
  if(path==='/api/articles'&&request.method==='POST'){
+  if(user.role==='owner')return json({error:'Owner oversight cannot create stories on behalf of authors'},403,corsHeaders);
   const d=validate(await request.json()),id=crypto.randomUUID(),now=new Date().toISOString();
   await env.DB.prepare('INSERT INTO articles(id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(id,user.author,user.email,d.title,d.category,d.excerpt,d.body,d.cover,'draft',now,now).run();
   return json({id,author:user.author,status:'draft',updated_at:now},201,corsHeaders)}
  const match=path.match(/^\/api\/articles\/([a-f0-9-]{36})(\/publish)?$/);
- if(match){const id=match[1];const story=await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).first();if(!story)return json({error:'Not found'},404,corsHeaders);
+ if(match){const id=match[1];const story=user.role==='owner'?await env.DB.prepare('SELECT * FROM articles WHERE id=?').bind(id).first():await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).first();if(!story)return json({error:'Not found'},404,corsHeaders);
   if(match[2]&&request.method==='POST'){
    const publishInput=await request.json().catch(()=>null);
    if(!publishInput||typeof publishInput.expectedUpdatedAt!=='string'||!publishInput.expectedUpdatedAt)return json({error:'Reload story before publishing'},428,corsHeaders);
@@ -66,10 +68,10 @@ export default {async fetch(request,env){
     const input=await request.json(),expected=input.expectedUpdatedAt;
     if(typeof expected!=='string'||!expected)return json({error:'Reload story before saving'},428,corsHeaders);
     const d=validate(input),now=new Date().toISOString();
-    const result=await env.DB.prepare('UPDATE articles SET title=?,category=?,excerpt=?,body=?,cover=?,updated_at=? WHERE id=? AND owner_email=? AND status=? AND updated_at=?').bind(d.title,d.category,d.excerpt,d.body,d.cover,now,id,user.email,'draft',expected).run();
+    const result=await env.DB.prepare('UPDATE articles SET title=?,category=?,excerpt=?,body=?,cover=?,updated_at=? WHERE id=? AND owner_email=? AND status=? AND updated_at=?').bind(d.title,d.category,d.excerpt,d.body,d.cover,now,id,story.owner_email,'draft',expected).run();
     if(result.meta?.changes!==1)return json({error:'This story changed on another device. Export your draft, then refresh to resolve the changes.'},409,corsHeaders);
     return json({saved:true,updated_at:now},200,corsHeaders)}
-  if(!match[2]&&request.method==='DELETE'){if(story.status==='published')return json({error:'Cannot delete published story'},409,corsHeaders);await env.DB.prepare('DELETE FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).run();return json({deleted:true},200,corsHeaders)}
+  if(!match[2]&&request.method==='DELETE'){if(user.role==='owner')return json({error:'Owner oversight cannot delete author stories'},403,corsHeaders);if(story.status==='published')return json({error:'Cannot delete published story'},409,corsHeaders);await env.DB.prepare('DELETE FROM articles WHERE id=? AND owner_email=?').bind(id,story.owner_email).run();return json({deleted:true},200,corsHeaders)}
  }
  return json({error:'Not found'},404,corsHeaders);
  }catch(e){return json({error:e.message==='Invalid story'||e.message.startsWith('Invalid ')||e.message.startsWith('Story too long')||e.message.startsWith('Cover must')?e.message:'Request failed'},400,corsHeaders)}
