@@ -1,7 +1,8 @@
 const { chromium } = require('playwright');
 const fs = require('node:fs');
 const path = require('node:path');
-const base = process.env.SITE_URL || 'https://aladdinslamp.xyz/';
+const rawBase = process.env.SITE_URL || 'https://aladdinslamp.xyz/';
+const base = rawBase + (rawBase.includes('?')?'&':'?') + 'qa_revision=' + encodeURIComponent((process.env.GITHUB_SHA||'current').slice(0,12));
 const routes = ['home','hunt','silver','apothecary','underground','fresh','journal'];
 const viewports = [
  {name:'desktop',width:1920,height:1080,screenshots:true},
@@ -104,7 +105,7 @@ const viewports = [
      }
      await page.locator('.clean-top-nav input[type="search"]').fill('silver');
      await page.locator('.clean-top-nav input[type="search"]').press('Enter');
-     try{await page.waitForFunction(()=>location.hash==='#search/silver',{timeout:6000})}catch{issues.push('Header search failed: '+new URL(page.url()).hash)}
+     try{await page.waitForFunction(()=>location.hash==='#search/silver',{timeout:6000})}catch{const source=await page.evaluate(()=>document.documentElement.outerHTML.includes('const runSearch=()=>'));issues.push('Header search failed: '+new URL(page.url()).hash+'; updated handler loaded='+source)}
     }else{
      await page.locator('#menuToggle').click();
      if(!(await page.locator('#menu').isVisible()))issues.push('Mobile painted hamburger failed');
