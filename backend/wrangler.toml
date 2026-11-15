@@ -3,7 +3,7 @@ main = "src/worker.js"
 compatibility_date = "2026-11-01"
 
 # Configure your own Cloudflare Access team domain and application AUD.
-# Required secrets: ACCESS_TEAM_DOMAIN, ACCESS_AUD, GITHUB_TOKEN
+# Required secrets: ACCESS_TEAM_DOMAIN, ACCESS_AUD, ALLOWED_AUTHORS, GITHUB_TOKEN
 # Optional: ALLOWED_AUTHORS (comma-separated email:author pairs)
 [[d1_databases]]
 binding = "DB"
