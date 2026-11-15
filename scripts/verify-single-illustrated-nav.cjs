@@ -45,6 +45,7 @@ async function main(){
       explorePosition:menu?getComputedStyle(menu).position:null,
       exploreBottom:menu?.getBoundingClientRect().bottom||0,
       viewportHeight:innerHeight,
+      currentScrollY:scrollY,
       horizontalOverflow:document.documentElement.scrollWidth>innerWidth+3
      }
     });
@@ -56,8 +57,9 @@ async function main(){
     if(width>=1280){
      assert.ok(state.paintedNavVisible&&state.linkCount===7&&state.paintedLinksClickable,label+' visible illustrated nav inactive');
      assert.ok(state.activeLink,label+' active page is not indicated');
-     assert.ok(state.panelRight<width*.43,label+' header panel extends across logo');
-     assert.ok(state.searchVisible,label+' search overlay unavailable');
+     if(route==='home')assert.ok(state.panelRight>width*.79&&state.panelRight<width*.86,label+' Home nav must mask baked section labels');
+     else assert.ok(state.panelRight<width*.405,label+' header panel extends across logo');
+     if(route!=='home')assert.ok(state.searchVisible,label+' illustrated search overlay unavailable');
      assert.equal(state.exploreVisible,false,label+' redundant floating Explore');
     }else{
      assert.equal(state.paintedNavVisible,false,label+' tiny picture links should not be touchscreen targets');
@@ -65,7 +67,7 @@ async function main(){
      assert.ok(state.exploreBottom<state.viewportHeight/3,label+' mobile Explore should be over top artwork, never article text');
      assert.equal(state.searchVisible,false,label+' painted search overlay should not cover mobile hero');
     }
-    if((width===375||width===1440)&&(route==='journal'||route==='hunt'||route==='home')){
+    if((width===375||width===1440)&&(route==='journal'||route==='hunt'||route==='home'||route==='silver'||route==='apothecary')){
      await page.screenshot({path:path.join('artifacts/single-nav',route+'-'+width+'.png'),animations:'disabled'});
     }
     report.push({width,route,...state});
