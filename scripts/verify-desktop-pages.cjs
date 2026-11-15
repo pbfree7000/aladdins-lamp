@@ -93,7 +93,7 @@ const viewports = [
     if(width>=1280){
      await page.locator('.image-nav .illustrated-links a[href="#silver"]').click();
      if(new URL(page.url()).hash!=='#silver')issues.push('Journal to Silver link failed');
-     if(!(await page.locator('.clean-top-nav a[aria-current="page"]').isVisible()))issues.push('Clean Silver active tab missing');
+     try{await page.locator('.clean-top-nav a[aria-current="page"]').waitFor({state:'visible',timeout:10000})}catch{issues.push('Clean Silver active tab missing')}
      await page.locator('.clean-top-nav a[href="#journal"]').click();
      if(new URL(page.url()).hash!=='#journal')issues.push('Clean Silver to Journal link failed');
      await page.locator('.illustrated-more').click();
