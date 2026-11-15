@@ -41,3 +41,5 @@ def main():
     (ROOT/'artifacts').mkdir(exist_ok=True)
     sheet.save(ROOT/'artifacts/navfree-six-review.jpg',quality=87)
 if __name__=='__main__':main()
+
+# Source artwork remains unchanged. Review all generated images before promotion.
