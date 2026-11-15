@@ -2,29 +2,27 @@
 
 Established: 15 November 2026. The approved visual character is a richly illustrated old shop: deep museum greens and browns, antique gold, warm parchment, elegant serif typography and the feeling of discovery. Never replace it with a generic commerce template.
 
-## Seven primary rooms
+## Seven primary rooms — navigation-free hero release
 
-| Route | Name | Approved desktop artwork | Approved mobile artwork |
+| Route | Page | Live desktop hero | Live mobile hero |
 |---|---|---|---|
-| `#home` | Home | `assets/Aladdin’s Lamp Hidden Treasures Homepage.png` | `assets/Aladdin’s Lamp Hidden Treasures Poster.png` |
-| `#hunt` | Treasure Hunt / Shop | `assets/treasure-hunt.jpg` | `assets/treasure-hunt-mobile.jpg` |
-| `#silver` | Silver Vault | `assets/silver-vault.jpg` | `assets/silver-vault-mobile.jpg` |
-| `#apothecary` | Rachael's Apothecary | `rachaels-apothecary.jpg` | `assets/rachaels-apothecary-mobile.jpg` |
-| `#underground` | Autumn's Underground | `assets/autumns-underground.jpg` | `assets/autumns-underground-mobile.jpg` |
-| `#fresh` | Fresh Finds | `assets/fresh-finds.jpg` | `fresh-finds-mobile.jpg` |
-| `#journal` | Treasure Journal | `assets/treasure-journal.jpg` | `assets/treasure-journal-mobile.jpg` |
+| `#home` | Home | `assets/home-navfree.jpg` | original illustrated poster (contains no menu bar) |
+| `#hunt` | Treasure Hunt / Shop | `assets/treasure-hunt-navfree.jpg` | same clean image, responsive crop |
+| `#silver` | Silver Vault | `assets/silver-vault-navfree.jpg` | same clean image, responsive crop |
+| `#apothecary` | Rachael's Apothecary | `assets/rachaels-apothecary-navfree.jpg` | same clean image, responsive crop |
+| `#underground` | Autumn's Underground | `assets/autumns-underground-navfree.jpg` | same clean image, responsive crop |
+| `#fresh` | Fresh Finds | `assets/fresh-finds-navfree.jpg` | same clean image, responsive crop |
+| `#journal` | Treasure Journal | `assets/treasure-journal-navfree.jpg` | same clean image, responsive crop |
 
-The Fresh Finds mobile art lives at repository root, **not** in `assets/`. Do not change approved source artwork without the creative owner's review. Mobile `<picture>` selects the mobile master at viewport width 680px or narrower.
+The original illustrated files are untouched as source archives. `scripts/produce_navfree_heroes.py` documents the upper artwork cleanup procedure for six rooms; Silver Vault retains its separately approved nav-free hero. Never overwrite the originals or regenerate assets without a visual check.
 
 ## Navigation contract
 
-- The approved artwork **already contains inconsistent painted navigation labels**. Never add a second `.art-nav` above the hero, and never hide all actual section labels behind transparent hitboxes. The hero starts at the top of the page. Desktop uses a single **visible**, keyboard-focusable `.image-nav .illustrated-links` overlay within the artwork's original header band, with seven section names, a highlighted active route, and an Explore menu trigger. It masks the conflicting painted wording without covering the central genie logo.
-- Home uses a wider, single-row maroon/gold menu matching its original framed header. The six other illustrated rooms use a compact two-row menu fitted to the space left of their painted genie logos; Silver and Apothecary use artwork-specific widths. The existing painted search field remains available for the six illustrated interior rooms, with search accessible from Explore on Home.
-- On mobile, the illustrated phone artwork's hamburger area has an accessible tap target. The home poster uses a small top-left icon. `Explore` opens the full accessible menu and search without creating a second visible navigation bar or overlapping article text.
-- At tablet sizes, use the Explore control rather than tiny desktop artwork labels. Escape and outside clicks dismiss the menu.
-- Navigation tests must check the **visible result**, not merely `nav` counts: assert `.art-nav` count is zero, hero top is unshifted, the seven labels have nonzero font size and readable color, the active tab is highlighted, desktop tabs navigate, search submits, and mobile Explore operates. Include screenshots of Home, Silver, Apothecary, Treasure Hunt and Journal on 1440px and phone layouts.
-- Mobile Silver and Apothecary subcategory links are explicit, touch-friendly pills below the illustrated hero.
-- All category links, branded home link, journal collections, search, and contact links should remain usable without JavaScript console errors or page-wide horizontal scrolling.
+- Exactly **one real, accessible `.clean-top-nav`** is rendered above the illustration on every route. No opaque rectangles masking artwork, no embedded navigation in the active source and no hidden links over inconsistent painted labels.
+- Desktop includes seven visible room links and the active page selection, plus real search. Tablet/phone uses the current page's heading and Explore menu with accessible search.
+- The navigation is a normal site component; its content is not part of the image. The Home poster is deliberately retained for phones, while interior pages use the nav-free desktop artwork with mobile cropping.
+- The approved original branding, illustrations, museum colors and typography remain the visual reference. Source nav removal can introduce subtle alterations near the top of the images; release only after screenshot review.
+- GitHub's responsive production QA checks all seven routes at 1920, 768, 430 and 375 pixels, verifies one clean header, expected image paths, active links, menu/search, and no horizontal overflow. Keep screenshot artifacts for signoff.
 
 ## Editorial and commerce boundary
 
