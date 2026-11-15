@@ -104,7 +104,7 @@ const viewports = [
      }
      await page.locator('.clean-top-nav input[type="search"]').fill('silver');
      await page.locator('.clean-top-nav input[type="search"]').press('Enter');
-     if(new URL(page.url()).hash!=='#search/silver')issues.push('Header search failed');
+     try{await page.waitForFunction(()=>location.hash==='#search/silver',{timeout:6000})}catch{issues.push('Header search failed: '+new URL(page.url()).hash)}
     }else{
      await page.locator('#menuToggle').click();
      if(!(await page.locator('#menu').isVisible()))issues.push('Mobile painted hamburger failed');
