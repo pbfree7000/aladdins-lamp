@@ -103,6 +103,8 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 }
 
 .journal-sample-credits{font:12px/1.55 system-ui,sans-serif;color:#7d5d38;margin:22px 0 8px;border-top:1px solid #c9a874;padding-top:10px}
+/* Hash routing must not scroll past illustrated navigation when opening the Journal home. */
+#journal{scroll-margin-top:200vh}
 /* Deliberately distinguish demonstration stories from actual author publications. */
 .journal-sample-tag{display:inline-block;align-self:flex-start;margin-bottom:4px;border:1px solid #926936;color:#765025;background:#f5e6c6;padding:5px 8px;font:700 10px/1.3 system-ui,sans-serif;letter-spacing:.095em}
 .journal-sample-banner{display:flex;flex-direction:column;gap:5px;margin:0 0 25px;padding:15px 18px;border-left:3px solid #a17c40;background:#e2c995;color:#563820}
@@ -114,34 +116,87 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 .journal-story-article .journal-story-body h4{font:italic 700 27px/1.2 Georgia,serif;margin:28px 0 12px;color:#573823}
 
 
-/* One visible navigation: links and search sit invisibly over controls painted in the approved hero artwork. */
+/* One visible, legible navigation integrated into the original illustrated top strip. */
 .art-nav{display:none!important}
 .image-nav{position:absolute;inset:0;z-index:21;pointer-events:none}
-.image-nav .painted-link,.image-nav .image-menu-hotspot{position:absolute;top:.5%;height:5.7%;pointer-events:auto;display:block;outline-offset:-3px;background:transparent;border:0;padding:0;overflow:hidden;font-size:0;color:transparent;text-decoration:none;cursor:pointer}
-.image-nav .image-menu-hotspot{left:0;width:3.4%;min-width:31px}
-.image-nav .painted-link:hover,.image-nav .image-menu-hotspot:hover{background:#f8cf6b13}
-.image-nav .painted-link:focus-visible,.image-nav .image-menu-hotspot:focus-visible{outline:3px solid #f2c67c;outline-offset:-1px;background:#38200d55}
-.hero>.search-form{position:absolute;z-index:22;left:67.2%;top:.9%;right:auto;width:21.9%;height:5%;margin:0;display:flex;align-items:stretch;gap:0;pointer-events:auto}
-.hero>.search-form .searchbox{width:100%;height:100%;min-height:0;min-width:0;margin:0;padding:0 12px;border:1px solid transparent;border-radius:25px;background:transparent;color:transparent;caret-color:#f4cc91;font-size:clamp(12px,1.15vw,17px)}
-.hero>.search-form .searchbox::placeholder{color:transparent}
-.hero>.search-form .searchbox:focus{border:1px solid #d5ab6b;background:#100c09f2;color:#fff0d3;outline:1px solid #edd09b}
-.hero>.search-form .searchbox:focus::placeholder{color:#b6a68f}
-.hero>.search-form .search-submit{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);padding:0;border:0;opacity:0;pointer-events:none}
-.hero>.search-form .search-preview{position:absolute;top:100%;right:0;left:auto;max-width:430px;width:min(430px,calc(100vw - 30px));font-size:14px;line-height:1.6}
-@media(min-width:981px){
- #menuToggle{display:none}
- #menu{left:12px;right:auto;top:clamp(45px,4vw,80px)}
+.image-nav .illustrated-links{
+ position:absolute;left:0;top:0;width:40.5%;height:clamp(54px,4.5vw,90px);
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
+ align-items:stretch;padding:clamp(3px,.4vw,8px) clamp(4px,.55vw,11px);gap:2px 3px;
+ background:linear-gradient(180deg,#0c0d0d,#111311);
+ border-right:1px solid #634724;border-bottom:1px solid #bb8e4d;
+ box-shadow:0 3px 12px #09070585;
+ pointer-events:auto
 }
-@media(max-width:980px){
+.hero[data-page="silver"] .illustrated-links{width:31.5%}
+.hero[data-page="apothecary"] .illustrated-links{width:41%}
+.hero[data-page="fresh"] .illustrated-links{width:37.5%}
+.hero[data-page="hunt"] .illustrated-links,
+.hero[data-page="journal"] .illustrated-links,
+.hero[data-page="underground"] .illustrated-links{width:38.8%}
+/* Home has a full-width painted navigation, unlike the other six illustrations.
+   Cover only its existing maroon menu pill, leaving its golden frame and central logo intact. */
+.hero[data-page="home"] .illustrated-links{
+ left:5.0%;top:.55vw;width:80.5%;height:4.8vw;
+ display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:1fr;
+ background:linear-gradient(180deg,#41110d,#270807);
+ border:1px solid #d5a057;border-radius:36px;box-shadow:inset 0 0 0 1px #713920;
+ padding:2px 5px;gap:2px
+}
+.hero[data-page="home"] .illustrated-links a,.hero[data-page="home"] .illustrated-links button{
+ font-size:clamp(11px,1.09vw,20px);padding:3px 4px
+}
+.hero[data-page="home"]>.search-form{display:none}
+.image-nav .illustrated-links a,.image-nav .illustrated-links button{
+ display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;
+ border:1px solid transparent;border-radius:4px;background:transparent;color:#f3dcb0;
+ font:italic 700 clamp(11px,.99vw,18px)/1.15 Georgia,serif;
+ text-decoration:none;white-space:nowrap;text-align:center;overflow:hidden;
+ text-overflow:ellipsis;padding:2px 3px;cursor:pointer
+}
+.image-nav .illustrated-links a:hover,.image-nav .illustrated-links button:hover,
+.image-nav .illustrated-links a:focus-visible,.image-nav .illustrated-links button:focus-visible{
+ color:#ffda8e;background:#58391f;outline:2px solid #e3af68;outline-offset:-1px
+}
+.image-nav .illustrated-links a[aria-current="page"]{
+ color:#ffdc91;background:linear-gradient(180deg,#674124,#3d291b);
+ border-bottom:2px solid #f1c477;text-shadow:0 0 5px #b47639
+}
+.image-nav .illustrated-links button{color:#d7b985;font-style:normal}
+.hero>.search-form{
+ position:absolute;z-index:22;left:67.2%;top:.9%;right:auto;width:21.9%;height:5%;margin:0;
+ display:flex;align-items:stretch;gap:0;pointer-events:auto
+}
+.hero>.search-form .searchbox{
+ width:100%;height:100%;min-height:0;min-width:0;margin:0;padding:0 12px;
+ border:1px solid transparent;border-radius:25px;background:transparent;
+ color:transparent;caret-color:#f4cc91;font-size:clamp(12px,1.15vw,17px)
+}
+.hero>.search-form .searchbox::placeholder{color:transparent}
+.hero>.search-form .searchbox:focus{
+ border:1px solid #d5ab6b;background:#100c09f2;color:#fff0d3;outline:1px solid #edd09b
+}
+.hero>.search-form .searchbox:focus::placeholder{color:#b6a68f}
+.hero>.search-form .search-submit{
+ position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+ padding:0;border:0;opacity:0;pointer-events:none
+}
+.hero>.search-form .search-preview{
+ position:absolute;top:100%;right:0;left:auto;max-width:430px;
+ width:min(430px,calc(100vw - 30px));font-size:14px;line-height:1.6
+}
+@media(min-width:1280px){
+ #menuToggle{display:none}
+ #menu{left:12px;right:auto;top:clamp(55px,5vw,95px)}
+}
+@media(max-width:1279px){
  .image-nav{display:none}
  .hero>.search-form{display:none}
- #menuToggle{position:absolute;top:14px;bottom:auto;right:14px;z-index:100;border-radius:25px}
- #menu{position:absolute;top:66px;bottom:auto;right:12px;left:auto;max-height:min(75dvh,700px);z-index:99}
+ #menuToggle{position:absolute;top:12px;left:12px;right:auto;bottom:auto;z-index:100;border-radius:22px}
+ #menu{position:absolute;top:66px;bottom:auto;right:auto;left:12px;max-height:min(75dvh,700px);z-index:99}
 }
-
-
 @media(max-width:680px){
- /* All illustrated mobile rooms except Home already paint a hamburger in the phone artwork. */
+ /* Use the painted hamburger on phone artwork and the compact Home menu. */
  body:has(.hero[data-page]:not([data-page="home"])) #menuToggle{
   top:42px;left:25px;right:auto;width:47px;height:47px;min-width:47px;min-height:47px;
   padding:0;border:0;background:transparent;box-shadow:none;color:transparent;font-size:0;overflow:hidden
@@ -149,7 +204,6 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
  body:has(.hero[data-page]:not([data-page="home"])) #menuToggle:focus-visible{
   outline:3px solid #ffdb8b;outline-offset:0;background:#13100a55
  }
- /* The Home poster has category plaques rather than a painted hamburger. */
  body:has(.hero[data-page="home"]) #menuToggle{
   top:15px;left:13px;right:auto;width:45px;height:45px;min-width:45px;min-height:45px;
   padding:0;border-radius:13px;font-size:0
@@ -369,7 +423,7 @@ function renderRoomGuide(pageKey){
  guide.hidden=false;
  guide.innerHTML='<span class="room-eyebrow">'+esc(d.eyebrow)+'</span><h2>'+esc(d.heading)+'</h2><p class="room-blurb">'+esc(d.description)+'</p><div class="room-actions"><a href="'+d.journal+'">'+esc(d.journalLabel)+' →</a><a class="secondary" href="mailto:aladdinslampxyz@gmail.com?subject='+encodeURIComponent(subject)+'">Ask the Treasure Keepers</a></div>';
 }
-function render(){const route=decodeURIComponent(location.hash.slice(1))||'home';const key=route.split('/')[0];const page=pages.find(p=>p.key===key)||pages[0];hero.dataset.page=page.key;closeMenu();document.getElementById('categoryNav').innerHTML=page.key==='home'?'<a class="autumn-link" href="#underground" aria-label="Explore Autumn’s Underground"><span class="autumn-star">✦</span> Autumn’s Underground <span class="autumn-star">✦</span></a>':'';menu.innerHTML='<form id="mobileSearchForm" role="search"><label for="mobileSearch" class="mobile-search-label">Find a Treasure</label><input id="mobileSearch" type="search" placeholder="Search the shop" aria-label="Search Aladdin’s Lamp"></form>'+pages.map(p=>'<a href="#'+p.key+'" '+(p.key===page.key?'aria-current="page"':'')+'>'+esc(p.name)+'</a>').join('');document.querySelectorAll('.art-nav').forEach(n=>n.remove());const mobileForm=document.getElementById('mobileSearchForm');mobileForm.addEventListener('submit',e=>{e.preventDefault();const term=document.getElementById('mobileSearch').value.trim();if(term)location.hash='#search/'+encodeURIComponent(term);closeMenu()});const pic=document.createElement('picture'),source=document.createElement('source'),img=document.createElement('img');source.media='(max-width:680px)';source.srcset=encodeURI(page.mobile);img.src=encodeURI(page.desktop);img.alt=page.title+' — illustrated Aladdin’s Lamp artwork';img.decoding='async';img.onerror=()=>{hero.textContent='Artwork temporarily unavailable — please use Explore to navigate.'};pic.append(source,img);hero.replaceChildren(pic);const neon=document.createElement('div');neon.className='ravenna-neon';neon.setAttribute('aria-hidden','true');const neonPic=pic.cloneNode(true);neon.appendChild(neonPic);if(page.key!=='silver')hero.appendChild(neon);const nav=document.createElement('nav');nav.className='image-nav';nav.setAttribute('aria-label','Illustrated site navigation');const slots=[['home','Home',4.1,3.0],['hunt','Shop',7.6,3.0],['silver','Silver Vault',10.8,5.2],['apothecary','Apothecary',16.1,5.3],['underground','Autumn’s Underground',21.5,6.6],['fresh','Fresh Finds',28.3,4.1],['journal','Journal',32.6,4.0]];nav.innerHTML='<button type="button" class="image-menu-hotspot" aria-label="Open shop navigation menu"></button>'+slots.map(([k,label,x,w])=>'<a class="painted-link" href="#'+k+'" style="left:'+x+'%;width:'+w+'%;" '+(page.key===k?'aria-current="page"':'')+' aria-label="'+label+'">'+label+'</a>').join('');hero.appendChild(nav);nav.querySelector('.image-menu-hotspot').addEventListener('click',e=>{e.stopPropagation();toggle.click()});const searchForm=document.createElement('form');searchForm.className='search-form';searchForm.setAttribute('role','search');const search=document.createElement('input');search.type='search';search.className='searchbox';search.id='siteSearch';search.placeholder='Find a Treasure…';search.setAttribute('aria-label','Search the shop');search.autocomplete='off';search.value=route.startsWith('search/')?route.slice(7):'';const submit=document.createElement('button');submit.type='submit';submit.className='search-submit';submit.textContent='Search';const preview=document.createElement('div');preview.className='search-preview';preview.id='searchPreview';preview.hidden=true;searchForm.append(search,submit,preview);hero.appendChild(searchForm);searchForm.addEventListener('submit',e=>{e.preventDefault();const term=search.value.trim();if(term){preview.hidden=true;location.hash='#search/'+encodeURIComponent(term);if(location.hash.slice(1)==='search/'+encodeURIComponent(term))document.getElementById('searchResults').scrollIntoView({behavior:'smooth',block:'start'});}});let previewToken=0;search.addEventListener('input',async()=>{const token=++previewToken;const term=search.value.trim().toLowerCase();if(!term){preview.hidden=true;return;}const words=term.split(/\s+/).filter(Boolean);const matches=pages.filter(p=>shopMatches(p,words));let stories=[];try{const posts=await fetchJournalPosts();stories=posts.filter(p=>p.status==='published'&&words.every(w=>[p.title,p.excerpt,p.body,p.category].join(' ').toLowerCase().includes(w)));}catch(e){}if(token!==previewToken)return;preview.innerHTML='<p>Search suggestions</p>'+matches.slice(0,5).map(p=>'<a href="#'+p.key+'">'+esc(p.name)+'</a>').join('')+stories.slice(0,4).map(p=>'<a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a>').join('')+(!matches.length&&!stories.length?'<p>No exact matches yet. Try searching all results.</p>':'')+'<a href="#search/'+encodeURIComponent(search.value.trim())+'">View all results for “'+esc(search.value.trim())+'”</a>';preview.hidden=false;});search.addEventListener('keydown',e=>{if(e.key==='Escape')preview.hidden=true});
+function render(){const route=decodeURIComponent(location.hash.slice(1))||'home';const key=route.split('/')[0];const page=pages.find(p=>p.key===key)||pages[0];hero.dataset.page=page.key;closeMenu();document.getElementById('categoryNav').innerHTML=page.key==='home'?'<a class="autumn-link" href="#underground" aria-label="Explore Autumn’s Underground"><span class="autumn-star">✦</span> Autumn’s Underground <span class="autumn-star">✦</span></a>':'';menu.innerHTML='<form id="mobileSearchForm" role="search"><label for="mobileSearch" class="mobile-search-label">Find a Treasure</label><input id="mobileSearch" type="search" placeholder="Search the shop" aria-label="Search Aladdin’s Lamp"></form>'+pages.map(p=>'<a href="#'+p.key+'" '+(p.key===page.key?'aria-current="page"':'')+'>'+esc(p.name)+'</a>').join('');document.querySelectorAll('.art-nav').forEach(n=>n.remove());const mobileForm=document.getElementById('mobileSearchForm');mobileForm.addEventListener('submit',e=>{e.preventDefault();const term=document.getElementById('mobileSearch').value.trim();if(term)location.hash='#search/'+encodeURIComponent(term);closeMenu()});const pic=document.createElement('picture'),source=document.createElement('source'),img=document.createElement('img');source.media='(max-width:680px)';source.srcset=encodeURI(page.mobile);img.src=encodeURI(page.desktop);img.alt=page.title+' — illustrated Aladdin’s Lamp artwork';img.decoding='async';img.onerror=()=>{hero.textContent='Artwork temporarily unavailable — please use Explore to navigate.'};pic.append(source,img);hero.replaceChildren(pic);const neon=document.createElement('div');neon.className='ravenna-neon';neon.setAttribute('aria-hidden','true');const neonPic=pic.cloneNode(true);neon.appendChild(neonPic);if(page.key!=='silver')hero.appendChild(neon);const nav=document.createElement('nav');nav.className='image-nav';nav.setAttribute('aria-label','Shop sections');const links=[['home','Home'],['hunt','Shop'],['silver','Silver Vault'],['apothecary','Apothecary'],['underground','Underground'],['fresh','Fresh Finds'],['journal','Journal']];nav.innerHTML='<div class="illustrated-links">'+links.map(([k,label])=>'<a href="#'+k+'" '+(page.key===k?'aria-current="page"':'')+'>'+label+'</a>').join('')+'<button type="button" class="illustrated-more" aria-label="Explore all sections">☰ Explore</button></div>';hero.appendChild(nav);nav.querySelector('.illustrated-more').addEventListener('click',e=>{e.stopPropagation();toggle.click()});const searchForm=document.createElement('form');searchForm.className='search-form';searchForm.setAttribute('role','search');const search=document.createElement('input');search.type='search';search.className='searchbox';search.id='siteSearch';search.placeholder='Find a Treasure…';search.setAttribute('aria-label','Search the shop');search.autocomplete='off';search.value=route.startsWith('search/')?route.slice(7):'';const submit=document.createElement('button');submit.type='submit';submit.className='search-submit';submit.textContent='Search';const preview=document.createElement('div');preview.className='search-preview';preview.id='searchPreview';preview.hidden=true;searchForm.append(search,submit,preview);hero.appendChild(searchForm);searchForm.addEventListener('submit',e=>{e.preventDefault();const term=search.value.trim();if(term){preview.hidden=true;location.hash='#search/'+encodeURIComponent(term);if(location.hash.slice(1)==='search/'+encodeURIComponent(term))document.getElementById('searchResults').scrollIntoView({behavior:'smooth',block:'start'});}});let previewToken=0;search.addEventListener('input',async()=>{const token=++previewToken;const term=search.value.trim().toLowerCase();if(!term){preview.hidden=true;return;}const words=term.split(/\s+/).filter(Boolean);const matches=pages.filter(p=>shopMatches(p,words));let stories=[];try{const posts=await fetchJournalPosts();stories=posts.filter(p=>p.status==='published'&&words.every(w=>[p.title,p.excerpt,p.body,p.category].join(' ').toLowerCase().includes(w)));}catch(e){}if(token!==previewToken)return;preview.innerHTML='<p>Search suggestions</p>'+matches.slice(0,5).map(p=>'<a href="#'+p.key+'">'+esc(p.name)+'</a>').join('')+stories.slice(0,4).map(p=>'<a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a>').join('')+(!matches.length&&!stories.length?'<p>No exact matches yet. Try searching all results.</p>':'')+'<a href="#search/'+encodeURIComponent(search.value.trim())+'">View all results for “'+esc(search.value.trim())+'”</a>';preview.hidden=false;});search.addEventListener('keydown',e=>{if(e.key==='Escape')preview.hidden=true});
 if(page.key==='home'){const h=document.createElement('div');h.className='hotspots home';[['silver','Silver Vault'],['hunt','Treasure Hunt'],['fresh','Fresh Finds'],['apothecary','Rachael’s Apothecary'],['journal','Treasure Journal']].forEach(([key,name])=>{const a=document.createElement('a');a.href='#'+key;a.setAttribute('aria-label','Explore '+name);a.textContent=name;h.appendChild(a)});hero.appendChild(h)}
 if(['silver','apothecary'].includes(page.key)){const labels=page.key==='silver'?['Coins','Bullion','Rarities','Collections','Consignments','Mike’s Picks']:['Herbal Teas','Remedies','Wellness','Essential Oils','Botanicals','Gift Sets','Rachael’s Picks'];const h=document.createElement('div');h.className='hotspots subcategory';labels.forEach((label,i)=>{const a=document.createElement('a');a.href='#'+page.key+'/'+encodeURIComponent(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'));a.textContent=label;a.setAttribute('aria-label','Explore '+label);h.appendChild(a)});hero.appendChild(h)}const mobileSub=document.getElementById('subcategoryMobile');mobileSub.innerHTML='';if(['silver','apothecary'].includes(page.key)){const labels=page.key==='silver'?['Coins','Bullion','Rarities','Collections','Consignments','Mike’s Picks']:['Herbal Teas','Remedies','Wellness','Essential Oils','Botanicals','Gift Sets','Rachael’s Picks'];mobileSub.innerHTML=labels.map(label=>{const slug=label.toLowerCase().replace(/[^a-z0-9]+/g,'-');return '<a href="#'+page.key+'/'+slug+'" '+(route.endsWith('/'+slug)?'aria-current="page"':'')+'>'+esc(label)+'</a>'}).join('')}catalog.hidden=true;catalog.innerHTML='';searchResults.hidden=true;searchResults.innerHTML='';if(['silver','hunt','fresh','apothecary','underground'].includes(page.key)){catalog.hidden=false;catalog.innerHTML='<div class="catalog-waiting"><span class="cabinet-eyebrow">THE DISPLAY CABINET</span><h2>'+esc(route.includes('/')?decodeURIComponent(route.split('/')[1]).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):'More discoveries to come')+'</h2><p>We’re carefully cataloguing what belongs on these shelves. Looking for something particular?</p><a href="mailto:aladdinslampxyz@gmail.com?subject='+encodeURIComponent('Inquiry: '+page.title)+'">Ask the Treasure Keepers →</a></div><div class="catalog-grid" data-product-mount aria-label="Collection listings"></div>';}if(route.startsWith('search/')){const term=route.slice(7).trim();searchResults.hidden=false;searchResults.innerHTML='<h2>Searching for “'+esc(term)+'”</h2><p>Looking through the shop and Treasure Journal…</p>';const words=term.toLowerCase().split(/\s+/).filter(Boolean);const found=pages.filter(p=>shopMatches(p,words));fetchJournalPosts().then(posts=>{if(location.hash.slice(1)!==route)return;const stories=Array.isArray(posts)?posts.filter(p=>p.status==='published'&&words.every(w=>[p.title,p.excerpt,p.body,p.category,p.author].some(v=>String(v||'').toLowerCase().includes(w)))):[];searchResults.innerHTML='<h2>Results for “'+esc(term)+'”</h2>'+(found.length?'<h3>Explore the shop</h3><ul>'+found.map(p=>'<li><a href="#'+p.key+'">'+esc(p.name)+'</a> — '+esc(p.desc)+'</li>').join('')+'</ul>':'')+(stories.length?'<h3>From the Treasure Journal</h3><ul>'+stories.map(p=>'<li><a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a> — '+esc(p.excerpt||p.category||'Journal story')+'</li>').join('')+'</ul>':'')+(!found.length&&!stories.length?'<p>No matches yet. Try “silver”, “tea”, “treasure”, or another keyword. Product-level search will be added as inventory is connected.</p>':'');}).catch(()=>{if(location.hash.slice(1)!==route)return;searchResults.innerHTML='<h2>Results for “'+esc(term)+'”</h2>'+(found.length?'<ul>'+found.map(p=>'<li><a href="#'+p.key+'">'+esc(p.name)+'</a></li>').join('')+'</ul>':'<p>Journal search is temporarily unavailable. Please try again shortly.</p>');});}document.getElementById('sectionTitle').textContent=page.title;document.getElementById('sectionDescription').textContent=page.desc;journal.hidden=true;journal.innerHTML='';if(page.key==='journal')loadJournal(route.slice('journal'.length).replace(/^\//,''));renderRoomGuide(page.key);loadJournalShelf(page.key);document.title=page.name+' | Aladdin’s Lamp Hidden Treasures';window.scrollTo(0,0)}
 window.addEventListener('hashchange',render);render();
