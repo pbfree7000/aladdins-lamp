@@ -1,0 +1,22 @@
+name: Two example journals — desktop and mobile QA
+on:
+  push:
+    branches: ['feature/two-journal-examples']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sample-preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Verify example journals across four layouts
+        run: node scripts/verify-journal-examples.cjs
