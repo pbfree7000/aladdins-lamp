@@ -57,6 +57,50 @@ async function main(){
    assert.equal(await page.locator('main').count()>0,true,'Missing layout on '+route);
    assert.equal((await page.locator('body').innerText()).includes('const inventoryUrl'),false,'Script leaked into page on '+route);
   }
+
+  // All seven storefront routes must work across phone, tablet and desktop widths.
+  const viewports=[{width:375,height:812},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1440,height:900}];
+  const routes=['home','hunt','silver','apothecary','underground','fresh','journal'];
+  let checked=0;
+  for(const viewport of viewports){
+   await page.setViewportSize(viewport);
+   for(const key of routes){
+    await page.goto(base+'/#'+key,{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>{const el=document.querySelector('.hero > picture img');return !!el&&el.complete},{timeout:15000});
+    const result=await page.evaluate(()=>{
+     const nav=document.querySelector('.art-nav'),links=nav?.querySelector('.nav-links'),chosen=links?.querySelector('[aria-current="page"]');
+     const hero=document.querySelector('.hero'),img=hero?.querySelector('picture img'),nr=nav?.getBoundingClientRect(),hr=hero?.getBoundingClientRect(),clip=links?.getBoundingClientRect(),active=chosen?.getBoundingClientRect();
+     return {
+      image:img?.naturalWidth||0,source:img?.currentSrc||'',
+      navCount:document.querySelectorAll('.art-nav').length,
+      navVisible:!!nr&&nr.height>30,
+      heroClear:!!nr&&!!hr&&nr.bottom<=hr.top+3,
+      noHorizontalOverflow:document.documentElement.scrollWidth<=innerWidth+3,
+      active:!!chosen,
+      selectedVisible:!!active&&!!clip&&active.left>=clip.left-7&&active.right<=clip.right+7,
+      menuVisible:!!document.getElementById('menuToggle')?.getBoundingClientRect().width
+     }
+    });
+    const label=viewport.width+'px '+key;
+    assert.ok(result.image>0,label+': hero image failed: '+result.source);
+    assert.equal(result.navCount,1,label+': duplicate navigation');
+    assert.ok(result.navVisible&&result.heroClear,label+': navigation obscures hero');
+    assert.ok(result.noHorizontalOverflow,label+': page horizontally overflows');
+    assert.ok(result.active&&result.selectedVisible,label+': selected section is not visible in navigation');
+    assert.ok(result.menuVisible,label+': Explore control missing');
+    if(viewport.width===375&&key==='fresh')assert.ok(result.source.endsWith('/fresh-finds-mobile.jpg'),'Mobile Fresh Finds should use its existing artwork: '+result.source);
+    checked++;
+   }
+  }
+  await page.setViewportSize({width:375,height:812});
+  await page.goto(base+'/#home',{waitUntil:'domcontentloaded'});
+  await page.locator('#menuToggle').click();
+  assert.equal(await page.locator('#menu').isVisible(),true,'Explore menu should open on phone');
+  await page.locator('#mobileSearch').fill('silver');
+  await page.locator('#mobileSearchForm').press('Enter');
+  assert.equal(new URL(page.url()).hash.startsWith('#search/silver'),true,'Mobile search should submit');
+  assert.equal(await page.locator('#menu').isVisible(),false,'Explore menu must close on route change');
+  console.log('PASS: '+checked+' responsive hero/navigation checks across five widths and seven routes, plus mobile search');
   assert.deepEqual(errors,[],'Public site JavaScript errors');
   console.log('PASS: journal feed, static fallback, article routes, search and six shop routes');
   const desk=await browser.newPage();
