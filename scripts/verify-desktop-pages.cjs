@@ -95,6 +95,13 @@ const viewports = [
      }));
      if(check.imageCount!==2||check.captions!==1)issues.push('Missing cover or captioned inline image');
      if(check.socialLinks!==2||check.socialButtons!==2)issues.push('Missing share actions');
+     const facebookHref=await page.locator('#journal .sharebar a').first().getAttribute('href');
+     const shareTarget=new URL(facebookHref).searchParams.get('u');
+     const expected=new URL('journal/'+slug+'.html',base).toString();
+     if(shareTarget!==expected)issues.push('Facebook share target missing individual preview page');
+     const previewResponse=await page.request.get(expected);
+     const previewHtml=await previewResponse.text();
+     if(previewResponse.status()!==200||!previewHtml.includes('property="og:title"')||!previewHtml.includes('property="og:image"')||!previewHtml.includes('property="og:description"'))issues.push('Article-specific social metadata missing');
      if(check.horizontalOverflow)issues.push('Horizontal overflow');
      report.push({viewport:'sample-'+width,width,route:slug,url:url.toString(),...check,issues});
     }catch(e){issues.push('Sample/article image failure: '+e.message);report.push({viewport:'sample-'+width,width,route:slug,url:url.toString(),issues})}
