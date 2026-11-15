@@ -36,6 +36,14 @@ function validPhoto(bytes,type){
 }
 function photoUrl(id){return 'https://journal-feed.aladdinslamp.xyz/media/'+id}
 function validate(d){if(!d||typeof d!=='object'||Array.isArray(d))throw Error('Invalid story');const out={};for(const k of ['title','category','excerpt','body','cover']){if(d[k]!==undefined&&typeof d[k]!=='string')throw Error('Invalid '+k);out[k]=String(d[k]||'').trim()}if(out.title.length>200||out.category.length>100||out.excerpt.length>1000||out.body.length>100000||out.cover.length>2000)throw Error('Story too long');if(out.cover&&!/^https:\/\//i.test(out.cover))throw Error('Cover must be an HTTPS URL');return out}
+function hasReadableStoryBody(raw){
+ const body=String(raw||'');
+ if(!body.startsWith('ALADDIN_BLOCKS_V1:'))return !!body.trim();
+ try{
+  const blocks=JSON.parse(body.slice('ALADDIN_BLOCKS_V1:'.length));
+  return Array.isArray(blocks)&&blocks.length<=300&&blocks.some(b=>b&&b.kind==='text'&&typeof b.text==='string'&&b.text.trim());
+ }catch{return false}
+}
 function slugify(s){return s.normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'story'}
 async function publishToDatabase(env,story,user,expectedUpdatedAt){
  const slug=slugify(story.title)+'-'+story.id.slice(0,8);
@@ -97,7 +105,7 @@ export default {async fetch(request,env){
    const publishInput=await request.json().catch(()=>null);
    if(!publishInput||typeof publishInput.expectedUpdatedAt!=='string'||!publishInput.expectedUpdatedAt)return json({error:'Reload story before publishing'},428,corsHeaders);
    if(story.updated_at!==publishInput.expectedUpdatedAt)return json({error:'Story changed on another device. Reload before publishing.'},409,corsHeaders);
-   if(!story.title.trim()||!story.excerpt.trim()||!story.body.trim())return json({error:'Title, introduction and body are required'},422,corsHeaders);
+   if(!story.title.trim()||!story.excerpt.trim()||!hasReadableStoryBody(story.body))return json({error:'Title, introduction and story text are required'},422,corsHeaders);
    if(story.status==='published')return json({error:'Already published'},409,corsHeaders);
    const result=await publishToDatabase(env,story,user,publishInput.expectedUpdatedAt);
    if(!result)return json({error:'Story changed while publishing. Reload before publishing.'},409,corsHeaders);
