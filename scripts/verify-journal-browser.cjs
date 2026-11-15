@@ -59,6 +59,7 @@ async function main(){
   }
 
   // All seven storefront routes must work across phone, tablet and desktop widths.
+  fs.mkdirSync(path.resolve(root,'artifacts/responsive'),{recursive:true});
   const viewports=[{width:375,height:812},{width:430,height:932},{width:768,height:1024},{width:1024,height:768},{width:1440,height:900}];
   const routes=['home','hunt','silver','apothecary','underground','fresh','journal'];
   let checked=0;
@@ -89,6 +90,7 @@ async function main(){
     assert.ok(result.active&&result.selectedVisible,label+': selected section is not visible in navigation');
     assert.ok(result.menuVisible,label+': Explore control missing');
     if(viewport.width===375&&key==='fresh')assert.ok(result.source.endsWith('/fresh-finds-mobile.jpg'),'Mobile Fresh Finds should use its existing artwork: '+result.source);
+    if(viewport.width===375||viewport.width===1440){await page.waitForTimeout(150);await page.screenshot({path:path.join(root,'artifacts/responsive',key+'-'+viewport.width+'.png'),fullPage:true,animations:'disabled'})}
     checked++;
    }
   }
