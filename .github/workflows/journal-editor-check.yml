@@ -4,6 +4,8 @@ on:
     paths:
       - 'writing-desk/**'
       - 'backend/**'
+      - 'index.html'
+      - 'scripts/verify-journal-browser.cjs'
       - '.github/workflows/journal-editor-check.yml'
   pull_request:
     paths:
@@ -31,3 +33,18 @@ jobs:
           fs.writeFileSync('/tmp/aladdin-editor.cjs',matches[0][1]);
           NODE
           node --check /tmp/aladdin-editor.cjs
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright browser
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Test public journal and author writing flow
+        run: node scripts/verify-journal-browser.cjs
