@@ -33,9 +33,58 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 @keyframes ravenna-neon-flicker{0%,32%,34%,36%,37%,72%,74%,75%,100%{opacity:.88}32.4%,35%,72.4%{opacity:.04}33%,36.4%,73%{opacity:.42}}
 @media(max-width:680px){.hero .ravenna-neon{mask-image:radial-gradient(ellipse 24% 9% at 82% 13%,#000 10%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 24% 9% at 82% 13%,#000 10%,transparent 100%)}}
 @media(prefers-reduced-motion:reduce){.hero .ravenna-neon img{animation:none;opacity:.65}}
+
+/* Treasure Journal editorial surfaces — preserve the approved illustrated page heroes */
+.journal{max-width:1120px;margin:0 auto;padding:36px 18px 62px}
+.journal-kicker{display:block;margin:0 0 10px;text-align:center;letter-spacing:.22em;text-transform:uppercase;color:#d5ae73;font:700 11px/1.5 system-ui,sans-serif}
+.journal-heading{font:italic 700 clamp(30px,4.1vw,48px)/1.13 Georgia,serif!important;color:#efd1a1;text-align:center;margin:4px 0 14px}
+.journal-lede{max-width:720px;margin:0 auto 26px;text-align:center;color:#ead8b9;font:16px/1.65 Georgia,serif}
+.journal-rule{height:1px;border:0;background:linear-gradient(90deg,transparent,#b88749,transparent);margin:27px 0}
+.journal-rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:28px 0 38px}
+.journal-room{display:flex;flex-direction:column;gap:9px;min-height:225px;padding:25px 22px;background:radial-gradient(ellipse at top,#263c36 0,#182722 55%,#1b1815 100%);border:1px solid #a57a42;outline:1px solid #58432c;outline-offset:-7px;color:#f5ddae;text-decoration:none;box-shadow:0 8px 24px #0005}
+.journal-room:hover,.journal-room:focus-visible{background:radial-gradient(ellipse at top,#375048,#252820 65%,#211813);border-color:#e7c483;outline-color:#b39056}
+.journal-room .seal{color:#d6af68;font:30px/1 Georgia,serif;letter-spacing:.05em}
+.journal-room .eyebrow{font:700 10px/1.4 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#d6b47c}
+.journal-room strong{font:italic 700 clamp(20px,2.1vw,28px)/1.2 Georgia,serif}
+.journal-room .room-desc{font:14px/1.55 Georgia,serif;color:#e8d5b6}
+.journal-room .room-link{margin-top:auto;color:#edc786;font:700 12px/1.4 system-ui,sans-serif;letter-spacing:.045em}
+.journal-collection-title{font:italic 700 clamp(24px,3.1vw,36px)/1.18 Georgia,serif;color:#eac791;text-align:center;margin:12px 0 17px}
+.journal-post-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:16px 0 24px}
+.journal .journal-story-card{overflow:hidden;display:flex;flex-direction:column;padding:0;margin:0;border:2px solid #ac8046;border-radius:3px;background:linear-gradient(155deg,#f0e0bf,#e8d2a5);color:#3c2d21;box-shadow:0 7px 17px #0005}
+.journal-story-card .card-photo{width:100%;height:180px;object-fit:cover;display:block;border-bottom:2px solid #b58b52}
+.journal-story-card .card-no-photo{display:flex;align-items:center;justify-content:center;height:95px;margin:11px 11px 0;border:1px solid #b99761;color:#aa874d;background:radial-gradient(ellipse,#ead7b4,#dec59a);font:italic 34px Georgia,serif}
+.journal-story-card .card-inside{padding:19px 22px 22px;display:flex;flex-direction:column;flex:1;gap:9px}
+.journal-story-card .card-meta{font:700 11px/1.5 system-ui,sans-serif;letter-spacing:.07em;color:#80603c}
+.journal .journal-story-card h3{margin:0;font:700 clamp(21px,2.4vw,29px)/1.18 Georgia,serif}
+.journal-story-card h3 a{color:#3b2b20;text-decoration:none}
+.journal-story-card h3 a:hover{text-decoration:underline;text-decoration-color:#9e733b}
+.journal-story-card .excerpt{font:15px/1.58 Georgia,serif;margin:0;color:#5d4530}
+.journal-story-card .read-note{margin-top:auto;padding-top:10px;color:#835321;font:700 12px system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase}
+.journal-return{display:inline-block;margin:6px 0 24px;color:#e9c88f;font:700 14px system-ui,sans-serif;text-decoration:none}
+.journal-return:hover{text-decoration:underline}
+.journal-story-article{max-width:860px;margin:10px auto 25px!important;padding:clamp(24px,5vw,55px)!important;border:2px solid #b28b56!important;border-radius:3px!important;background:linear-gradient(160deg,#f3e7cf,#e9d5ad)!important;box-shadow:0 15px 40px #0005}
+.journal-story-article h3{font:700 clamp(30px,3.7vw,43px)/1.14 Georgia,serif!important;margin:12px 0 18px!important}
+.journal-story-article .story-byline{font:700 12px system-ui,sans-serif;letter-spacing:.055em;color:#805e35}
+.journal-story-article .journal-feature-image{max-height:500px!important}
+.journal-story-article .story-excerpt{font:italic 19px/1.55 Georgia,serif;color:#705132;margin:18px 0 22px}
+.journal-empty{max-width:660px;margin:18px auto;padding:28px;text-align:center;border:1px solid #896c47;background:#162723;color:#e8d1a7;font:15px/1.65 Georgia,serif}
+.journal-shelf{max-width:1150px;margin:0 auto 36px;padding:16px 18px 34px}
+.journal-shelf[hidden]{display:none}
+.journal-shelf-inner{padding:31px clamp(18px,3vw,42px);border-top:2px solid #bb914e;border-bottom:2px solid #bb914e;background:linear-gradient(155deg,#132927,#212119 60%,#291d17);box-shadow:0 9px 25px #0004}
+.journal-shelf-top{text-align:center;max-width:720px;margin:auto}
+.journal-shelf-top h2{margin:8px 0 12px;color:#efd6a5;font:italic 700 clamp(27px,3.2vw,39px) Georgia,serif}
+.journal-shelf-top p{margin:0 0 24px;color:#e4d4b6;font:15px/1.65 Georgia,serif}
+.journal-shelf .journal-post-grid{margin-top:22px}
+.journal-shelf-actions{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:20px}
+.journal-shelf-actions a{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;min-height:44px;border:1px solid #cba264;color:#fbe7c4;background:#5d3422;text-decoration:none;font:700 14px Georgia,serif}
+.journal-shelf-actions a.secondary{background:transparent}
+.journal-shelf-actions a:hover,.journal-shelf-actions a:focus-visible{background:#83502f;outline:2px solid #e2b56f}
+@media(max-width:800px){.journal-rooms{grid-template-columns:1fr;gap:12px}.journal-room{min-height:0}.journal-post-grid{grid-template-columns:1fr}.journal-story-card .card-photo{height:220px}}
+@media(max-width:500px){.journal{padding:26px 12px 44px}.journal-shelf{padding:12px 12px 25px}.journal-shelf-inner{padding:25px 14px}.journal-story-card .card-photo{height:180px}}
+
 #journal .journal-feature-image{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:10px;margin:14px auto 22px;border:1px solid #936c3b}</style></head><body>
 <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="menu">☰ Explore</button><nav class="menu" id="menu" aria-label="Explore Aladdin's Lamp" hidden></nav>
-<main><section class="hero" id="hero" aria-label="Illustrated Aladdin's Lamp page"></section><nav id="subcategoryMobile" class="subcategory-mobile" aria-label="Explore illustrated subcategories"></nav><nav id="categoryNav" class="category-nav" aria-label="Additional illustrated category"></nav><section id="catalog" class="catalog" hidden></section><section id="searchResults" class="search-results" hidden></section><section id="journal" class="journal" hidden></section>
+<main><section class="hero" id="hero" aria-label="Illustrated Aladdin's Lamp page"></section><nav id="subcategoryMobile" class="subcategory-mobile" aria-label="Explore illustrated subcategories"></nav><nav id="categoryNav" class="category-nav" aria-label="Additional illustrated category"></nav><section id="journalShelf" class="journal-shelf" hidden aria-label="Stories from the Treasure Journal"></section><section id="catalog" class="catalog" hidden></section><section id="searchResults" class="search-results" hidden></section><section id="journal" class="journal" hidden></section>
 <section class="bottom"><h2 id="sectionTitle">Aladdin's Lamp</h2><p id="sectionDescription"></p><a class="contact" href="mailto:aladdinslampxyz@gmail.com?subject=Aladdin%27s%20Lamp%20Inquiry">Contact the Treasure Keepers</a></section></main>
 <footer>Aladdin's Lamp · Ravenna, Nebraska · Coming Soon<br><a href="mailto:aladdinslampxyz@gmail.com">aladdinslampxyz@gmail.com</a><br>© 2026 Aladdin's Lamp Hidden Treasures · <a href="journal/feed.xml">Journal RSS</a> · <a href="privacy.html">Privacy</a></footer>
 <script>
@@ -89,40 +138,82 @@ async function fetchJournalPosts(){
  const liveSlugs=new Set(newer.map(p=>slugify(p)));
  return [...newer,...older.filter(p=>!liveSlugs.has(slugify(p)))];
 }
-async function loadJournal(selectedSlug){
+
+const JOURNAL_ROOMS={
+ rachael:{key:'rachael',symbol:'✥',eyebrow:'Rachael’s Apothecary',title:'The Apothecary Notebook',description:'Botanicals, thoughtful rituals, old-fashioned remedies and everyday objects worth cherishing.',route:'#journal/collection/rachael'},
+ mike:{key:'mike',symbol:'✦',eyebrow:'Fresh Finds & the Trade',title:'Mike’s Finds & Field Notes',description:'Antiques, curiosities, silver, collecting and whatever interesting thing the trade turns up next.',route:'#journal/collection/mike'},
+ silver:{key:'silver',symbol:'◇',eyebrow:'The Silver Vault',title:'Notes from the Silver Vault',description:'Hallmarks, silver, collecting knowledge and stories from the cabinet.',route:'#journal/collection/silver'}
+};
+function belongsToJournalRoom(post,room){
+ const author=String(post.author||'').toLowerCase(),cat=String(post.category||'').toLowerCase();
+ if(room==='rachael')return author==='rachael'||cat.includes('rachael')||cat.includes('apothecary');
+ if(room==='mike')return author==='mike'||(author==='the treasure keepers'&&['behind the counter','collecting guides','treasure hunt'].includes(cat));
+ if(room==='silver')return cat.includes('silver');
+ return true
+}
+function journalPostsOnly(posts){return (Array.isArray(posts)?posts:[]).filter(p=>p&&p.status==='published').sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))}
+function journalCard(post){
+ const url='#journal/'+encodeURIComponent(slugify(post)),safe=/^https:\/\//i.test(post.cover||'');
+ const media=safe?'<img class="card-photo" src="'+esc(post.cover)+'" loading="lazy" decoding="async" alt="'+esc(post.title||'Story photograph')+'">':'<div class="card-no-photo" aria-hidden="true">✦</div>';
+ return '<article class="journal-story-card">'+media+'<div class="card-inside"><div class="card-meta">'+esc(post.date||'')+' · '+esc(post.author||'The Treasure Keepers')+' · '+esc(post.category||'Journal')+'</div><h3><a href="'+url+'">'+esc(post.title||'Untitled story')+'</a></h3><p class="excerpt">'+esc(post.excerpt||'Explore the story behind this discovery.')+'</p><a class="read-note" href="'+url+'">Read the story →</a></div></article>'
+}
+function journalRoomCard(room){
+ return '<a class="journal-room" href="'+room.route+'"><span class="seal" aria-hidden="true">'+room.symbol+'</span><span class="eyebrow">'+esc(room.eyebrow)+'</span><strong>'+esc(room.title)+'</strong><span class="room-desc">'+esc(room.description)+'</span><span class="room-link">Enter the notebook →</span></a>'
+}
+function journalStoryArticle(post){
+ return '<a class="journal-return" href="#journal">← Back to all journal stories</a><article class="journal-story-article"><div class="story-byline">'+esc(post.date||'')+' · '+esc(post.author||'The Treasure Keepers')+' · '+esc(post.category||'Journal')+'</div><h3>'+esc(post.title)+'</h3>'+(post.excerpt?'<p class="story-excerpt">'+esc(post.excerpt)+'</p>':'')+(post.cover&&/^https:\/\//i.test(post.cover)?'<img class="journal-feature-image" loading="lazy" decoding="async" alt="'+esc(post.title||'Journal cover')+'" src="'+esc(post.cover)+'">':'')+'<div class="journal-story-body">'+renderJournalBody(post.body)+'</div>'+shareBar(post)+'</article>';
+}
+function linkJournalCards(visible){return visible.length?'<div class="journal-post-grid">'+visible.map(journalCard).join('')+'</div>':'<div class="journal-empty">The first notes for this collection are being prepared. Discover the rest of the Treasure Journal in the meantime.</div>'}
+let journalLoadId=0;
+async function loadJournal(journalRoute=''){
+ const token=++journalLoadId;
  journal.hidden=false;
- journal.innerHTML='<h2>Stories from the Treasure Keepers</h2><p class="note">Our first stories are being prepared.</p>';
- try {
-  const posts=await fetchJournalPosts();
-  if(!Array.isArray(posts))return;
-  const published=posts.filter(p=>p.status==='published').sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  const chosen=selectedSlug?published.filter(p=>slugify(p)===selectedSlug):published;
-  if(!chosen.length)return;
-  const categories=['All stories',...new Set(published.map(p=>p.category).filter(Boolean))];
-  const selected=selectedSlug?published.find(p=>slugify(p)===selectedSlug):null;
-  journal.innerHTML='<h2>Stories from the Treasure Keepers</h2><p class="journal-intro">Notes from the shop: curious finds, collecting knowledge, botanical rituals, and the stories behind everyday treasures.</p>'+(selected?'<a class="journal-back" href="#journal">← All Journal stories</a>':'<div class="journal-filter" role="group" aria-label="Filter stories by subject">'+categories.map((cat,i)=>'<button type="button" data-category="'+esc(cat)+'" aria-pressed="'+(i===0)+'">'+esc(cat)+'</button>').join('')+'</div>')+chosen.map(p=>'<article data-story-category="'+esc(p.category||'')+'"><time>'+esc(p.date||'')+' · '+esc(p.author||'')+' · '+esc(p.category||'Journal')+'</time><h3><a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a></h3>'+(selected?'':'<p class="excerpt">'+esc(p.excerpt||'')+'</p>')+(p.cover&&/^https:\/\//i.test(p.cover)?'<img class="journal-feature-image" loading="lazy" decoding="async" alt="'+esc(p.title||'Journal cover')+'" src="'+esc(p.cover)+'">':'')+renderJournalBody(p.body)+shareBar(p)+'</article>').join('');
-  journal.querySelectorAll('[data-category]').forEach(b=>b.addEventListener('click',()=>{const category=b.dataset.category;journal.querySelectorAll('[data-category]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));journal.querySelectorAll('[data-story-category]').forEach(a=>a.hidden=category!=='All stories'&&a.dataset.storyCategory!==category)}));
-  journal.querySelectorAll('[data-copy]').forEach(b=>{
-   b.onclick=async()=>{
-    const url=postUrl(b.dataset.copy);
-    try{await navigator.clipboard.writeText(url);b.textContent='Link copied!'}
-    catch(e){prompt('Copy this link:',url)}
-   };
-  });
-  journal.querySelectorAll('[data-share]').forEach(b=>{
-   b.onclick=async()=>{
-    const p=published.find(item=>slugify(item)===b.dataset.share);
-    const url=postUrl(b.dataset.share);
-    if(navigator.share){
-     try{await navigator.share({title:p.title,url})}
-     catch(e){if(e.name!=='AbortError')prompt('Copy this link:',url)}
-    }else{prompt('Copy this link:',url)}
-   };
-  });
- }catch(e){console.warn('Journal unavailable',e)}
+ journal.innerHTML='<span class="journal-kicker">ALADDIN’S LAMP · STORIES & DISCOVERIES</span><h2 class="journal-heading">The Treasure Journal</h2><p class="note">Opening the journal…</p>';
+ const posts=journalPostsOnly(await fetchJournalPosts());
+ if(token!==journalLoadId||!(location.hash==='#journal'||location.hash.startsWith('#journal/')))return;
+ const parts=journalRoute.split('/');
+ const room=parts[0]==='collection'?JOURNAL_ROOMS[parts[1]]:null;
+ const story=parts[0]&&parts[0]!=='collection'?posts.find(p=>slugify(p)===parts[0]):null;
+ if(story){
+  journal.innerHTML='<span class="journal-kicker">FROM THE TREASURE KEEPERS</span>'+journalStoryArticle(story);
+  bindJournalShare(posts);return
+ }
+ if(parts[0]&&parts[0]!=='collection'){
+  journal.innerHTML='<a class="journal-return" href="#journal">← The Treasure Journal</a><div class="journal-empty">This story could not be found. Explore the other stories in the Journal.</div>';return
+ }
+ if(parts[0]==='collection'&&!room){
+  journal.innerHTML='<a class="journal-return" href="#journal">← The Treasure Journal</a><div class="journal-empty">This collection could not be found.</div>';return
+ }
+ const intro=room?'<a class="journal-return" href="#journal">← All journal stories</a><span class="journal-kicker">'+esc(room.eyebrow)+'</span><h2 class="journal-heading">'+esc(room.title)+'</h2><p class="journal-lede">'+esc(room.description)+'</p>':
+ '<span class="journal-kicker">ALADDIN’S LAMP · STORIES & DISCOVERIES</span><h2 class="journal-heading">The Treasure Journal</h2><p class="journal-lede">Collected thoughts, extraordinary finds and the curious little histories that live inside an old shop.</p><div class="journal-rooms">'+Object.values(JOURNAL_ROOMS).map(journalRoomCard).join('')+'</div>';
+ const shown=room?posts.filter(p=>belongsToJournalRoom(p,room.key)):posts;
+ const title=room?'From the notebook':'Latest dispatches';
+ const extra=room?'<p class="journal-lede"><a class="journal-return" href="#journal">Explore every story in the Treasure Journal →</a></p>':'';
+ journal.innerHTML=intro+'<hr class="journal-rule"><h3 class="journal-collection-title">'+title+'</h3>'+linkJournalCards(shown)+extra
+}
+function bindJournalShare(posts){
+ journal.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{
+  const url=postUrl(b.dataset.copy);
+  try{await navigator.clipboard.writeText(url);b.textContent='Link copied!'}catch{prompt('Copy this link:',url)}
+ });
+ journal.querySelectorAll('[data-share]').forEach(b=>b.onclick=async()=>{
+  const post=posts.find(p=>slugify(p)===b.dataset.share),url=postUrl(b.dataset.share);
+  if(navigator.share){try{await navigator.share({title:post?.title||'The Treasure Journal',url})}catch(e){if(e.name!=='AbortError')prompt('Copy this link:',url)}}else{prompt('Copy this link:',url)}
+ });
+}
+async function loadJournalShelf(pageKey){
+ const roomKey=pageKey==='apothecary'?'rachael':pageKey==='fresh'?'mike':pageKey==='silver'?'silver':null;
+ const el=document.getElementById('journalShelf');
+ if(!roomKey){el.hidden=true;el.replaceChildren();return}
+ const room=JOURNAL_ROOMS[roomKey];el.hidden=false;
+ el.innerHTML='<div class="journal-shelf-inner"><div class="journal-shelf-top"><span class="journal-kicker">THE TREASURE JOURNAL</span><h2>'+esc(room.title)+'</h2><p>'+esc(room.description)+'</p></div><p class="note" style="text-align:center">Opening the notebook…</p></div>';
+ const posts=journalPostsOnly(await fetchJournalPosts());
+ if((location.hash.slice(1).split('/')[0]||'home')!==pageKey)return;
+ const featured=posts.filter(p=>belongsToJournalRoom(p,roomKey)).slice(0,2);
+ el.innerHTML='<div class="journal-shelf-inner"><div class="journal-shelf-top"><span class="journal-kicker">THE TREASURE JOURNAL</span><h2>'+esc(room.title)+'</h2><p>'+esc(room.description)+'</p></div>'+linkJournalCards(featured)+'<div class="journal-shelf-actions"><a href="'+room.route+'">Read '+esc(room.title)+' →</a><a class="secondary" href="#journal">Browse all stories</a></div></div>'
 }
 function render(){const route=decodeURIComponent(location.hash.slice(1))||'home';const key=route.split('/')[0];const page=pages.find(p=>p.key===key)||pages[0];hero.dataset.page=page.key;closeMenu();document.getElementById('categoryNav').innerHTML=page.key==='home'?'<a class="autumn-link" href="#underground" aria-label="Explore Autumn’s Underground"><span class="autumn-star">✦</span> Autumn’s Underground <span class="autumn-star">✦</span></a>':'';menu.innerHTML='<form id="mobileSearchForm" role="search"><label for="mobileSearch" class="mobile-search-label">Find a Treasure</label><input id="mobileSearch" type="search" placeholder="Search the shop" aria-label="Search Aladdin’s Lamp"></form>'+pages.map(p=>'<a href="#'+p.key+'" '+(p.key===page.key?'aria-current="page"':'')+'>'+esc(p.name)+'</a>').join('');document.querySelectorAll('.art-nav').forEach(n=>n.remove());const mobileForm=document.getElementById('mobileSearchForm');mobileForm.addEventListener('submit',e=>{e.preventDefault();const term=document.getElementById('mobileSearch').value.trim();if(term)location.hash='#search/'+encodeURIComponent(term);closeMenu()});const pic=document.createElement('picture'),source=document.createElement('source'),img=document.createElement('img');source.media='(max-width:680px)';source.srcset=encodeURI(page.mobile);img.src=encodeURI(page.desktop);img.alt=page.title+' — illustrated Aladdin’s Lamp artwork';img.decoding='async';img.onerror=()=>{hero.textContent='Artwork temporarily unavailable — please use Explore to navigate.'};pic.append(source,img);hero.replaceChildren(pic);const neon=document.createElement('div');neon.className='ravenna-neon';neon.setAttribute('aria-hidden','true');const neonPic=pic.cloneNode(true);neon.appendChild(neonPic);if(page.key!=='silver')hero.appendChild(neon);const nav=document.createElement('nav');nav.className='art-nav';nav.setAttribute('aria-label','Main navigation');const links=[['home','Home'],['hunt','Shop'],['silver','Silver Vault'],['apothecary','Apothecary'],['underground','Autumn’s Underground'],['fresh','Fresh Finds'],['journal','Journal']];nav.innerHTML=links.map(([k,label])=>'<a href="#'+k+'" '+(page.key===k?'aria-current="page"':'')+'>'+label+'</a>').join('');hero.before(nav);const searchForm=document.createElement('form');searchForm.className='search-form';searchForm.setAttribute('role','search');const search=document.createElement('input');search.type='search';search.className='searchbox';search.id='siteSearch';search.placeholder='Find a Treasure…';search.setAttribute('aria-label','Search the shop');search.autocomplete='off';search.value=route.startsWith('search/')?route.slice(7):'';const submit=document.createElement('button');submit.type='submit';submit.className='search-submit';submit.textContent='Search';const preview=document.createElement('div');preview.className='search-preview';preview.id='searchPreview';preview.hidden=true;searchForm.append(search,submit,preview);nav.appendChild(searchForm);searchForm.addEventListener('submit',e=>{e.preventDefault();const term=search.value.trim();if(term){preview.hidden=true;location.hash='#search/'+encodeURIComponent(term);if(location.hash.slice(1)==='search/'+encodeURIComponent(term))document.getElementById('searchResults').scrollIntoView({behavior:'smooth',block:'start'});}});let previewToken=0;search.addEventListener('input',async()=>{const token=++previewToken;const term=search.value.trim().toLowerCase();if(!term){preview.hidden=true;return;}const words=term.split(/\s+/).filter(Boolean);const matches=pages.filter(p=>shopMatches(p,words));let stories=[];try{const posts=await fetchJournalPosts();stories=posts.filter(p=>p.status==='published'&&words.every(w=>[p.title,p.excerpt,p.body,p.category].join(' ').toLowerCase().includes(w)));}catch(e){}if(token!==previewToken)return;preview.innerHTML='<p>Search suggestions</p>'+matches.slice(0,5).map(p=>'<a href="#'+p.key+'">'+esc(p.name)+'</a>').join('')+stories.slice(0,4).map(p=>'<a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a>').join('')+(!matches.length&&!stories.length?'<p>No exact matches yet. Try searching all results.</p>':'')+'<a href="#search/'+encodeURIComponent(search.value.trim())+'">View all results for “'+esc(search.value.trim())+'”</a>';preview.hidden=false;});search.addEventListener('keydown',e=>{if(e.key==='Escape')preview.hidden=true});
 if(page.key==='home'){const h=document.createElement('div');h.className='hotspots home';[['silver','Silver Vault'],['hunt','Treasure Hunt'],['fresh','Fresh Finds'],['apothecary','Rachael’s Apothecary'],['journal','Treasure Journal']].forEach(([key,name])=>{const a=document.createElement('a');a.href='#'+key;a.setAttribute('aria-label','Explore '+name);a.textContent=name;h.appendChild(a)});hero.appendChild(h)}
-if(['silver','apothecary'].includes(page.key)){const labels=page.key==='silver'?['Coins','Bullion','Rarities','Collections','Consignments','Mike’s Picks']:['Herbal Teas','Remedies','Wellness','Essential Oils','Botanicals','Gift Sets','Rachael’s Picks'];const h=document.createElement('div');h.className='hotspots subcategory';labels.forEach((label,i)=>{const a=document.createElement('a');a.href='#'+page.key+'/'+encodeURIComponent(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'));a.textContent=label;a.setAttribute('aria-label','Explore '+label);h.appendChild(a)});hero.appendChild(h)}const mobileSub=document.getElementById('subcategoryMobile');mobileSub.innerHTML='';if(['silver','apothecary'].includes(page.key)){const labels=page.key==='silver'?['Coins','Bullion','Rarities','Collections','Consignments','Mike’s Picks']:['Herbal Teas','Remedies','Wellness','Essential Oils','Botanicals','Gift Sets','Rachael’s Picks'];mobileSub.innerHTML=labels.map(label=>{const slug=label.toLowerCase().replace(/[^a-z0-9]+/g,'-');return '<a href="#'+page.key+'/'+slug+'" '+(route.endsWith('/'+slug)?'aria-current="page"':'')+'>'+esc(label)+'</a>'}).join('')}catalog.hidden=true;catalog.innerHTML='';searchResults.hidden=true;searchResults.innerHTML='';if(['silver','hunt','fresh','apothecary','underground'].includes(page.key)){catalog.hidden=false;catalog.innerHTML='<h2>'+esc(route.includes('/')?decodeURIComponent(route.split('/')[1]).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):page.title)+'</h2><p>The display cabinet is being prepared. New treasures will appear here as our family catalogs them.</p><div class="catalog-grid"><article class="catalog-card"><h3>Ask the Treasure Keepers</h3><p>Looking for something special in this collection?</p><p><a href="mailto:aladdinslampxyz@gmail.com?subject='+encodeURIComponent('Inquiry: '+page.title)+'">Send an inquiry</a></p></article></div>';}if(route.startsWith('search/')){const term=route.slice(7).trim();searchResults.hidden=false;searchResults.innerHTML='<h2>Searching for “'+esc(term)+'”</h2><p>Looking through the shop and Treasure Journal…</p>';const words=term.toLowerCase().split(/\s+/).filter(Boolean);const found=pages.filter(p=>shopMatches(p,words));fetchJournalPosts().then(posts=>{if(location.hash.slice(1)!==route)return;const stories=Array.isArray(posts)?posts.filter(p=>p.status==='published'&&words.every(w=>[p.title,p.excerpt,p.body,p.category,p.author].some(v=>String(v||'').toLowerCase().includes(w)))):[];searchResults.innerHTML='<h2>Results for “'+esc(term)+'”</h2>'+(found.length?'<h3>Explore the shop</h3><ul>'+found.map(p=>'<li><a href="#'+p.key+'">'+esc(p.name)+'</a> — '+esc(p.desc)+'</li>').join('')+'</ul>':'')+(stories.length?'<h3>From the Treasure Journal</h3><ul>'+stories.map(p=>'<li><a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a> — '+esc(p.excerpt||p.category||'Journal story')+'</li>').join('')+'</ul>':'')+(!found.length&&!stories.length?'<p>No matches yet. Try “silver”, “tea”, “treasure”, or another keyword. Product-level search will be added as inventory is connected.</p>':'');}).catch(()=>{if(location.hash.slice(1)!==route)return;searchResults.innerHTML='<h2>Results for “'+esc(term)+'”</h2>'+(found.length?'<ul>'+found.map(p=>'<li><a href="#'+p.key+'">'+esc(p.name)+'</a></li>').join('')+'</ul>':'<p>Journal search is temporarily unavailable. Please try again shortly.</p>');});}document.getElementById('sectionTitle').textContent=page.title;document.getElementById('sectionDescription').textContent=page.desc;journal.hidden=true;journal.innerHTML='';if(page.key==='journal')loadJournal(route.split('/')[1]||'');document.title=page.name+' | Aladdin’s Lamp Hidden Treasures';window.scrollTo(0,0)}
+if(['silver','apothecary'].includes(page.key)){const labels=page.key==='silver'?['Coins','Bullion','Rarities','Collections','Consignments','Mike’s Picks']:['Herbal Teas','Remedies','Wellness','Essential Oils','Botanicals','Gift Sets','Rachael’s Picks'];const h=document.createElement('div');h.className='hotspots subcategory';labels.forEach((label,i)=>{const a=document.createElement('a');a.href='#'+page.key+'/'+encodeURIComponent(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'));a.textContent=label;a.setAttribute('aria-label','Explore '+label);h.appendChild(a)});hero.appendChild(h)}const mobileSub=document.getElementById('subcategoryMobile');mobileSub.innerHTML='';if(['silver','apothecary'].includes(page.key)){const labels=page.key==='silver'?['Coins','Bullion','Rarities','Collections','Consignments','Mike’s Picks']:['Herbal Teas','Remedies','Wellness','Essential Oils','Botanicals','Gift Sets','Rachael’s Picks'];mobileSub.innerHTML=labels.map(label=>{const slug=label.toLowerCase().replace(/[^a-z0-9]+/g,'-');return '<a href="#'+page.key+'/'+slug+'" '+(route.endsWith('/'+slug)?'aria-current="page"':'')+'>'+esc(label)+'</a>'}).join('')}catalog.hidden=true;catalog.innerHTML='';searchResults.hidden=true;searchResults.innerHTML='';if(['silver','hunt','fresh','apothecary','underground'].includes(page.key)){catalog.hidden=false;catalog.innerHTML='<h2>'+esc(route.includes('/')?decodeURIComponent(route.split('/')[1]).replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):page.title)+'</h2><p>The display cabinet is being prepared. New treasures will appear here as our family catalogs them.</p><div class="catalog-grid"><article class="catalog-card"><h3>Ask the Treasure Keepers</h3><p>Looking for something special in this collection?</p><p><a href="mailto:aladdinslampxyz@gmail.com?subject='+encodeURIComponent('Inquiry: '+page.title)+'">Send an inquiry</a></p></article></div>';}if(route.startsWith('search/')){const term=route.slice(7).trim();searchResults.hidden=false;searchResults.innerHTML='<h2>Searching for “'+esc(term)+'”</h2><p>Looking through the shop and Treasure Journal…</p>';const words=term.toLowerCase().split(/\s+/).filter(Boolean);const found=pages.filter(p=>shopMatches(p,words));fetchJournalPosts().then(posts=>{if(location.hash.slice(1)!==route)return;const stories=Array.isArray(posts)?posts.filter(p=>p.status==='published'&&words.every(w=>[p.title,p.excerpt,p.body,p.category,p.author].some(v=>String(v||'').toLowerCase().includes(w)))):[];searchResults.innerHTML='<h2>Results for “'+esc(term)+'”</h2>'+(found.length?'<h3>Explore the shop</h3><ul>'+found.map(p=>'<li><a href="#'+p.key+'">'+esc(p.name)+'</a> — '+esc(p.desc)+'</li>').join('')+'</ul>':'')+(stories.length?'<h3>From the Treasure Journal</h3><ul>'+stories.map(p=>'<li><a href="#journal/'+encodeURIComponent(slugify(p))+'">'+esc(p.title)+'</a> — '+esc(p.excerpt||p.category||'Journal story')+'</li>').join('')+'</ul>':'')+(!found.length&&!stories.length?'<p>No matches yet. Try “silver”, “tea”, “treasure”, or another keyword. Product-level search will be added as inventory is connected.</p>':'');}).catch(()=>{if(location.hash.slice(1)!==route)return;searchResults.innerHTML='<h2>Results for “'+esc(term)+'”</h2>'+(found.length?'<ul>'+found.map(p=>'<li><a href="#'+p.key+'">'+esc(p.name)+'</a></li>').join('')+'</ul>':'<p>Journal search is temporarily unavailable. Please try again shortly.</p>');});}document.getElementById('sectionTitle').textContent=page.title;document.getElementById('sectionDescription').textContent=page.desc;journal.hidden=true;journal.innerHTML='';if(page.key==='journal')loadJournal(route.slice('journal'.length).replace(/^\//,''));loadJournalShelf(page.key);document.title=page.name+' | Aladdin’s Lamp Hidden Treasures';window.scrollTo(0,0)}
 window.addEventListener('hashchange',render);render();
 </script></body></html>
