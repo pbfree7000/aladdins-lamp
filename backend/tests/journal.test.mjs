@@ -1,13 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generateKeyPairSync,createSign,webcrypto} from 'node:crypto';
+import {generateKeyPairSync,createSign} from 'node:crypto';
 import worker from '../dist/worker.js';
 import publicFeed from '../src/public-feed.js';
 
 const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
 const jwk={...publicKey.export({format:'jwk'}),kid:'journal-test-key',alg:'RS256'};
 const originalFetch=globalThis.fetch;
-globalThis.crypto=webcrypto;
 globalThis.fetch=async url=>{
  if(String(url)==='https://unit.cloudflareaccess.com/cdn-cgi/access/certs')return Response.json({keys:[jwk]});
  throw Error('Unexpected outbound request: '+url);
