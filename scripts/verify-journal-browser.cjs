@@ -31,6 +31,25 @@ async function main(){
   await page.goto(base+'/#journal/qa-rich-photo',{waitUntil:'domcontentloaded'});
   await page.getByText('The lucky find').waitFor({timeout:12000});
   assert.equal(await page.locator('.journal-body-photo.align-right.size-small').count(),1,'Rich body image alignment must render');
+  await page.goto(base+'/#apothecary',{waitUntil:'domcontentloaded'});
+  await page.locator('#journalShelf .journal-story-card').getByText('The Quiet Ritual of Tea').waitFor({timeout:12000});
+  assert.equal(await page.locator('#journalShelf .journal-story-card').count(),1,'Apothecary shelf should feature only its relevant stories');
+  await page.goto(base+'/#fresh',{waitUntil:'domcontentloaded'});
+  await page.locator('#journalShelf .journal-story-card').getByText('The Art of the Find').waitFor({timeout:12000});
+  await page.goto(base+'/#silver',{waitUntil:'domcontentloaded'});
+  await page.locator('#journalShelf .journal-story-card').getByText('A Little Silver Knowledge').waitFor({timeout:12000});
+  await page.goto(base+'/#journal',{waitUntil:'domcontentloaded'});
+  await page.locator('.journal-room').first().waitFor({timeout:12000});
+  assert.equal(await page.locator('.journal-room').count(),3,'One hub must expose Rachael, Mike and Silver collections');
+  await page.goto(base+'/#journal/collection/rachael',{waitUntil:'domcontentloaded'});
+  await page.locator('#journal .journal-story-card').getByText('The Quiet Ritual of Tea').waitFor({timeout:12000});
+  assert.equal(await page.locator('#journal .journal-story-card').getByText('The Art of the Find').count(),0,'Rachael collection must not contain general legacy story');
+  await page.goto(base+'/#journal/collection/mike',{waitUntil:'domcontentloaded'});
+  await page.locator('#journal .journal-story-card').getByText('QA Browser Article').waitFor({timeout:12000});
+  await page.locator('#journal .journal-story-card').getByText('The Art of the Find').waitFor({timeout:12000});
+  await page.goto(base+'/#journal/collection/silver',{waitUntil:'domcontentloaded'});
+  await page.locator('#journal .journal-story-card').getByText('A Little Silver Knowledge').waitFor({timeout:12000});
+  console.log('PASS: three themed journal collections and contextual story shelves');
   await page.goto(base+'/#search/qa',{waitUntil:'domcontentloaded'});
   await page.getByText('QA Browser Article').first().waitFor({timeout:12000});
   for(const route of ['home','silver','hunt','fresh','apothecary','underground']){
