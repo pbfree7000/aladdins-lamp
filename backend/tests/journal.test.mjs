@@ -119,6 +119,15 @@ test('photos stay private until publication and reject unauthorized access and s
  const live=await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS});
  assert.equal(live.status,200);assert.equal(live.headers.get('content-type'),'image/png');
 });
+test('image-only rich layout is not a publishable story',async()=>{
+ const imageOnly={...article,body:'ALADDIN_BLOCKS_V1:'+JSON.stringify([{kind:'image',id:'aabbccdd-1111-4111-8111-000000000001',caption:'Photo',size:'medium',align:'center'}])};
+ const created=await (await worker.fetch(request('/api/articles','POST','mike@example.com',imageOnly),env)).json();
+ const publish=await worker.fetch(request('/api/articles/'+created.id+'/publish','POST','mike@example.com',{expectedUpdatedAt:created.updated_at}),env);
+ assert.equal(publish.status,422);
+ const corrupted={...article,body:'ALADDIN_BLOCKS_V1:not-json'};
+ const invalid=await (await worker.fetch(request('/api/articles','POST','mike@example.com',corrupted),env)).json();
+ assert.equal((await worker.fetch(request('/api/articles/'+invalid.id+'/publish','POST','mike@example.com',{expectedUpdatedAt:invalid.updated_at}),env)).status,422);
+});
 test('public feed includes only published fields and no draft ownership',async()=>{
  const a=await publicFeed.fetch(new Request('https://journal-feed.aladdinslamp.xyz/api/articles'),{DB});
  assert.equal(a.status,200);const payload=await a.json();
