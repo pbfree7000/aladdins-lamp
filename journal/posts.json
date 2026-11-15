@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "slug": "the-art-of-the-find",
+    "title": "The Art of the Find",
+    "date": "2026-11-14",
+    "author": "The Treasure Keepers",
+    "category": "Behind the Counter",
+    "status": "published",
+    "excerpt": "Why the best treasures aren't always the ones you set out to find.",
+    "body": "There is a particular pleasure in finding something you weren't looking for.\n\nIt might be a piece of silver tucked into a cabinet, a beautifully worn book, or an object whose purpose takes a little detective work. The moment is the same: you stop, look again, and wonder where it has been.\n\nAt Aladdin’s Lamp, we love the stories objects carry. Sometimes those stories are documented; sometimes they remain mysteries. Either way, curiosity is part of the treasure.\n\nOur Treasure Journal is a place to share discoveries, useful collecting notes, and the small surprises that make a visit to an old shop memorable.\n\nHave a story about a favorite find? We would love to hear it."
+  },
+  {
+    "slug": "a-little-silver-knowledge",
+    "title": "A Little Silver Knowledge",
+    "date": "2026-11-13",
+    "author": "The Treasure Keepers",
+    "category": "The Silver Vault",
+    "status": "published",
+    "excerpt": "A few useful things to look for when an old silver piece catches your eye.",
+    "body": "An old silver object can be beautiful before you know anything about its value. But a few small details can make the discovery more interesting.\n\nStart with the marks. A stamp reading “sterling” or “925” generally indicates an alloy containing 92.5 percent silver. Silverplate is different: it is a layer of silver over another metal. Hallmarks vary by country and period, so a single mark rarely tells the whole story.\n\nCondition matters, too. Look at repairs, wear, missing pieces, and whether a set is complete. Patina can be part of an object's appeal; aggressive polishing can erase detail.\n\nIf you are unsure, ask questions and research before making assumptions about age or value. The most satisfying collecting habit is learning to look closely.\n\nVisit the Silver Vault to explore the collection as new pieces are cataloged."
+  },
+  {
+    "slug": "the-quiet-ritual-of-tea",
+    "title": "The Quiet Ritual of Tea",
+    "date": "2026-11-12",
+    "author": "The Treasure Keepers",
+    "category": "Rachael’s Apothecary",
+    "status": "published",
+    "excerpt": "A warm cup, a favorite vessel, and a moment worth keeping.",
+    "body": "Some rituals need very little preparation. A favorite cup, a kettle, a few quiet minutes: sometimes that is enough.\n\nThe pleasure of tea is as much about the setting as the ingredients. A handmade mug feels different in the hand. A vintage tray brings a little ceremony to an ordinary afternoon. A jar of fragrant herbs can make the kitchen feel like an apothecary.\n\nWhen exploring botanical blends, read ingredient labels carefully and check for potential interactions or allergies. Traditional use is not the same as evidence of a medical benefit.\n\nRachael’s Apothecary celebrates the everyday beauty of botanicals, thoughtful gifts, and small moments of care. We look forward to sharing more as the shelves fill."
+  }
+]
