@@ -1,0 +1,35 @@
+name: QA restored geometry on five storefront rooms
+on:
+  push:
+    branches: ['fix/restore-unwarped-heroes']
+    paths:
+      - 'index.html'
+      - 'scripts/verify-unwarped-heroes.cjs'
+      - '.github/workflows/check-restored-heroes.yml'
+      - 'assets/*-navfree-fixed.jpg'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  responsive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Test all seven rooms, particularly five restored illustrations
+        run: node scripts/verify-unwarped-heroes.cjs
+      - name: Save screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-unwarped-live-layout-previews
+          path: artifacts/restored-heroes/
+          if-no-files-found: warn
+          retention-days: 30
