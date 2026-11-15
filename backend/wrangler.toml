@@ -1,16 +1,14 @@
 name = "aladdins-journal-api"
-main = "src/worker.js"
+main = "dist/worker.js"
 compatibility_date = "2026-11-01"
 
 # Configure your own Cloudflare Access team domain and application AUD.
-# Required secrets: ACCESS_TEAM_DOMAIN, ACCESS_AUD, ALLOWED_AUTHORS, GITHUB_TOKEN
-# Optional: ALLOWED_AUTHORS (comma-separated email:author pairs)
+# Required bindings: ACCESS_TEAM_DOMAIN, ACCESS_AUD, ALLOWED_AUTHORS. No GitHub publishing token.
+# Build with: cd backend && npm run build; protect journal-api.aladdinslamp.xyz with Cloudflare Access.
 [[d1_databases]]
 binding = "DB"
 database_name = "aladdins-lamp-journal"
 database_id = "153117ce-cb3d-4ead-86f8-fa9e5e61c26e"
 
 [vars]
-GITHUB_REPO = "pbfree7000/aladdins-lamp"
-GITHUB_BRANCH = "main"
 ALLOWED_ORIGIN = "https://aladdinslamp.xyz"
