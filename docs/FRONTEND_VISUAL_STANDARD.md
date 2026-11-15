@@ -18,10 +18,10 @@ The Fresh Finds mobile art lives at repository root, **not** in `assets/`. Do no
 
 ## Navigation contract
 
-- The functional `.art-nav` stays **outside and above** the hero; never overlay it on art. There is exactly one main navigation on any route.
-- Desktop uses the original antique-gold serif horizontal navigation and search. For compact desktop widths, search is available through Explore instead of crowding the room links.
-- At 980px and narrower, a modest branded masthead and horizontally scrollable, visible room navigation remain above the hero. The active section is centered in view. Explore opens the full accessible menu and mobile search.
-- The fixed Explore button is always operable, and Escape/outside clicks dismiss the menu.
+- The approved artwork **already contains its main navigation**. Never render another visible `.art-nav` above it. The hero begins at the top of the page. The actual desktop navigation is a set of transparent, keyboard-focusable `.image-nav` links aligned over the painted labels; the search input is aligned over the one painted search field.
+- On mobile, the illustrated phone artwork's hamburger area has an accessible tap target. The home poster uses a small top-left icon. `Explore` opens the full accessible menu and search without creating a second visible navigation bar or overlapping article text.
+- At tablet sizes, use the Explore control rather than tiny desktop artwork labels. Escape and outside clicks dismiss the menu.
+- Navigation tests must reject **zero/one extra bars based on appearance**, not merely test `nav` element counts: assert `.art-nav` count is zero, hero top is unshifted, photo nav links navigate, search submits, and mobile Explore operates.
 - Mobile Silver and Apothecary subcategory links are explicit, touch-friendly pills below the illustrated hero.
 - All category links, branded home link, journal collections, search, and contact links should remain usable without JavaScript console errors or page-wide horizontal scrolling.
 
