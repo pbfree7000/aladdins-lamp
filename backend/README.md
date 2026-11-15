@@ -55,3 +55,13 @@ Deployment: `backend/wrangler.toml` includes the **private API** R2 binding. The
 ## Inline visual editor regression
 
 The Chromium integration check covers file uploads, pasted clipboard images, reorder controls, saved image placement, and published-body rendering. Retain these tests when maintaining the editor. The public storefront's `index.html` renders the same `ALADDIN_BLOCKS_V1:` format; whenever the format changes, update its allowlisted renderer together with the editor and backend tests. Preserve the static fallback articles and the approved illustrations.
+
+## Public editorial architecture (15 November 2026)
+
+The storefront uses **one Treasure Journal**. Public story entries are stored once in D1 and served by `journal-feed.aladdinslamp.xyz/api/articles`. Three museum-style editorial entrances on the existing illustrated storefront lead to filtered views of the same stories:
+
+- `#apothecary` features **The Apothecary Notebook** → `#journal/collection/rachael`, matching published posts by author `Rachael` or legacy apothecary categories.
+- `#fresh` features **Mike’s Finds & Field Notes** → `#journal/collection/mike`, matching ALL of Mike's published stories regardless of category; selected original generic Treasure Keepers stories are also visible until Mike publishes.
+- `#silver` features **Notes from the Silver Vault** → `#journal/collection/silver`, matching published silver-category stories by either author. This is a thematic filter, **not** a separate journal database or second author workflow.
+
+The hub `#journal` includes these three editorial rooms and all latest stories, while existing article links remain `#journal/<slug>`. Editorial room/shelf cards use the existing AL palette, typography, illustrated hero assets, antique gold and parchment treatment; don't replace approved artwork with a generic storefront. The existing legacy static journal posts remain as a fallback while new D1 stories accumulate. If changing filters or `ALADDIN_BLOCKS_V1:` rendering, update browser QA in `scripts/verify-journal-browser.cjs` and keep the live storefront change isolated from the draft editor PR.
