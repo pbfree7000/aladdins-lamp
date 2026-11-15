@@ -36,9 +36,11 @@ async function main(){
   const desk=await browser.newPage();
   const editorErrors=[];desk.on('pageerror',e=>editorErrors.push(e.message));
   const articles=new Map();let n=0;
-  await desk.route('**/config.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({apiUrl:base})}));
-  await desk.route('**/api/**',r=>{
+  await desk.route('**/config.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({apiUrl:'https://journal-api.aladdinslamp.xyz'})}));
+  await desk.route('https://journal-api.aladdinslamp.xyz/api/**',r=>{
    const u=new URL(r.request().url),p=u.pathname,method=r.request().method();
+   const headers={'access-control-allow-origin':base,'access-control-allow-credentials':'true','access-control-allow-headers':'content-type','access-control-allow-methods':'GET, POST, PUT, DELETE, OPTIONS'};
+   if(method==='OPTIONS')return r.fulfill({status:204,headers});
    let status=200,value={};
    if(p==='/api/me')value={email:'rachael@example.com',author:'Rachael',publishEnabled:true};
    else if(p==='/api/articles'&&method==='GET')value={articles:[...articles.values()]};
@@ -49,11 +51,11 @@ async function main(){
     else if(method==='PUT'){const data=JSON.parse(r.request().postData());Object.assign(d,data,{updated_at:new Date().toISOString()});value={saved:true,updated_at:d.updated_at}}
     else if(method==='DELETE'){articles.delete(id);value={deleted:true}}
    }
-   return r.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
+   return r.fulfill({status,contentType:'application/json',headers,body:JSON.stringify(value)});
   });
   desk.on('dialog',dialog=>dialog.accept());
   await desk.goto(base+'/desk',{waitUntil:'domcontentloaded'});
-  await desk.getByText('Secure account connected.').waitFor({timeout:12000});
+  try{await desk.getByText('Secure account connected.').waitFor({timeout:12000})}catch(e){throw Error('Could not connect to mock API; status: '+await desk.locator('#connectionState').innerText()+'; help: '+await desk.locator('#connectionHelp').innerText()+'; page errors: '+editorErrors.join(' | '))}
   await desk.locator('#title').fill('QA editor story');
   await desk.locator('#excerpt').fill('An introduction.');
   await desk.locator('#body').fill('An illustrative story.');
