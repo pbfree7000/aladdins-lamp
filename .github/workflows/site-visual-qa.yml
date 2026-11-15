@@ -1,0 +1,37 @@
+name: Production visual QA — seven desktop pages
+on:
+  workflow_run:
+    workflows: ["Deploy static site to GitHub Pages"]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Verify production and capture seven screenshots
+        env:
+          SITE_URL: https://aladdinslamp.xyz/
+        run: node scripts/verify-desktop-pages.cjs
+      - name: Preserve screenshots and machine-readable report even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-production-qa-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 30
