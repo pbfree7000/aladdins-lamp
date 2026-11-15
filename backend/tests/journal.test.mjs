@@ -35,7 +35,7 @@ class FakeD1{
  }
 }
 const DB=new FakeD1();
-const env={DB,ACCESS_TEAM_DOMAIN:'unit.cloudflareaccess.com',ACCESS_AUD:'journal-test-aud',ALLOWED_AUTHORS:'mike@example.com:Mike,rachael@example.com:Rachael',ALLOWED_ORIGIN:'https://aladdinslamp.xyz'};
+const env={DB,EDITOR_ASSETS:{get:async()=>'<html><body>Publish online</body></html>'},ACCESS_TEAM_DOMAIN:'unit.cloudflareaccess.com',ACCESS_AUD:'journal-test-aud',ALLOWED_AUTHORS:'mike@example.com:Mike,rachael@example.com:Rachael',ALLOWED_ORIGIN:'https://aladdinslamp.xyz'};
 function request(path,method='GET',email='mike@example.com',payload,origin){
  return new Request('https://journal-api.aladdinslamp.xyz'+path,{method,headers:{'Cf-Access-Jwt-Assertion':jwt(email),...(payload?{'content-type':'application/json'}:{}),...(origin?{Origin:origin}:{})},body:payload?JSON.stringify(payload):undefined})
 }
