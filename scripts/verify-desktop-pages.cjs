@@ -156,3 +156,5 @@ const viewports = [
  console.log('Verified '+report.length+' page/viewport combinations; '+report.filter(x=>x.issues.length).length+' failures.');
  if(failed)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+// Nav-free seven-room release gate: image sources must never contain baked navigation.
