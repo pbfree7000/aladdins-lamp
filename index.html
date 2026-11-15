@@ -176,7 +176,9 @@ main{width:100%;margin:0 auto}.hero{position:relative;width:100%;margin:0 auto;l
 }
 .hero[data-page="silver"]>picture img{display:block;width:100%;height:auto}
 @media(max-width:680px){
- .hero[data-page="silver"]>picture img{height:auto;max-height:none;object-fit:contain}
+ .hero[data-page="silver"]>picture img{
+  height:clamp(238px,76vw,390px);max-height:none;object-fit:cover;object-position:center top
+ }
 }
 
 /* One visible, legible navigation integrated into the original illustrated top strip. */
