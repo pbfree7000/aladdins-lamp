@@ -40,3 +40,11 @@ The Fresh Finds mobile art lives at repository root, **not** in `assets/`. Do no
 - The production workflow `.github/workflows/site-visual-qa.yml` runs `scripts/verify-desktop-pages.cjs` after a successful Pages deployment at desktop (1920px), tablet (768px), phone (375px), and large phone (430px).
 - Acceptance: each hero resolves to the approved asset; one visible current-state nav; no nav/art overlap, horizontal overflow, broken imagery or JavaScript errors; journal editorial rooms present; mobile links tappable; captured screenshots attached to workflow.
 - Never merge the editor/backend development PR wholesale to release a visual change. Deploy minimal tested frontend diffs. Record the final commit SHA and successful visual QA URL.
+
+## Source-art navigation cleanup (15 November 2026)
+
+The Silver Vault desktop and mobile now use the dedicated nav-free hero asset `assets/silver-vault-navfree.jpg` (1774 × 814 pixels). Its illustrated navigation was **removed from the image itself** rather than hidden by a black rectangle. The source still contains the Aladdin’s Lamp logo, Mike’s Silver Vault plaque, silver display and a decorative metals-prices board. The visual board is illustrative and must not be represented as a verified live data feed without a real integration.
+
+The Silver Vault route now uses a **single real HTML navigation** `.clean-top-nav` positioned above the art, with seven clickable links, active Silver Vault state and searchable desktop input. On mobile/tablet, the nav becomes a compact Silver Vault title and Explore menu, and the art gets a centered readability crop. The old painted-overlay `.image-nav` remains only on other pages until their source artwork has been cleaned; do not reintroduce the black-patch strategy to Silver.
+
+Production and branch QA must assert that Silver uses the new asset and `.clean-top-nav`, has no `.image-nav` overlay, retains responsive category links, and that changing routes removes the Silver-only nav. Clean the remaining six source artworks through a consistent visual review before switching them to the real header. Preserve the existing approved art and creative decision-making; product data remains Mike’s agent’s responsibility.
