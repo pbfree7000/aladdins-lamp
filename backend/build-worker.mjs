@@ -1,0 +1,12 @@
+import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {dirname,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=dirname(fileURLToPath(import.meta.url));
+const source=readFileSync(resolve(root,'src/worker.js'),'utf8');
+const editor=readFileSync(resolve(root,'../writing-desk/index.html'),'utf8');
+if(!source.includes("env.EDITOR_ASSETS?.get('desk-v1')"))throw Error('Protected editor asset route missing');
+if(!editor.includes('id="cloudPublishBtn"'))throw Error('Editor publish button missing');
+mkdirSync(resolve(root,'dist'),{recursive:true});
+writeFileSync(resolve(root,'dist/worker.js'),source);
+writeFileSync(resolve(root,'dist/desk.html'),editor);
+console.log('Prepared journal API code and protected editor asset');
