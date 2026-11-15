@@ -17,12 +17,12 @@ CONFIG = {
     "fresh": ("assets/fresh-finds.jpg", "assets/fresh-finds-navfree-fixed.jpg", .402, .643, 56),
     "apothecary": ("rachaels-apothecary.jpg", "assets/rachaels-apothecary-navfree-fixed.jpg", .420, .655, 57),
     "underground": ("assets/autumns-underground.jpg", "assets/autumns-underground-navfree-fixed.jpg", .410, .645, 56),
-    "journal": ("assets/treasure-journal.jpg", "assets/treasure-journal-navfree-fixed.jpg", .408, .648, 56),
+    "journal": ("assets/treasure-journal.jpg", "assets/treasure-journal-navfree-fixed.jpg", .408, .648, 33),
 }
 
 def repair(src, left_end, right_start, header_height):
     h, w = src.shape[:2]
-    if h < 600 or w < 1100:
+    if h < 450 or w < 800:
         raise ValueError(f"Unexpectedly small source artwork: {w} x {h}")
     mask = np.zeros((h, w), dtype=np.uint8)
     mask[:header_height, :round(w * left_end)] = 255
