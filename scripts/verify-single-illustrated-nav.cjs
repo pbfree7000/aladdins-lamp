@@ -68,7 +68,7 @@ async function main(){
      assert.equal(state.searchVisible,false,label+' painted search overlay should not cover mobile hero');
     }
     if((width===375||width===1440)&&(route==='journal'||route==='hunt'||route==='home'||route==='silver'||route==='apothecary')){
-     await page.screenshot({path:path.join('artifacts/single-nav',route+'-'+width+'.png'),animations:'disabled'});
+     await page.waitForTimeout(350);await page.screenshot({path:path.join('artifacts/single-nav',route+'-'+width+'.png'),animations:'disabled'});
     }
     report.push({width,route,...state});
     console.log('PASS: '+label+' single painted navigation');
