@@ -26,6 +26,15 @@ async function identity(request,env){
  if(!['Mike','Rachael'].includes(author))throw Error('Invalid author mapping');
  return {email,author,role:'author'};
 }
+const photoTypes={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
+function validPhoto(bytes,type){
+ if(type==='image/jpeg')return bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
+ if(type==='image/png')return [137,80,78,71,13,10,26,10].every((x,i)=>bytes[i]===x);
+ if(type==='image/webp')return String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP';
+ if(type==='image/gif')return String.fromCharCode(...bytes.slice(0,6)).match(/^GIF8[79]a$/)!==null;
+ return false;
+}
+function photoUrl(id){return 'https://journal-feed.aladdinslamp.xyz/media/'+id}
 function validate(d){if(!d||typeof d!=='object'||Array.isArray(d))throw Error('Invalid story');const out={};for(const k of ['title','category','excerpt','body','cover']){if(d[k]!==undefined&&typeof d[k]!=='string')throw Error('Invalid '+k);out[k]=String(d[k]||'').trim()}if(out.title.length>200||out.category.length>100||out.excerpt.length>1000||out.body.length>100000||out.cover.length>2000)throw Error('Story too long');if(out.cover&&!/^https:\/\//i.test(out.cover))throw Error('Cover must be an HTTPS URL');return out}
 function slugify(s){return s.normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'story'}
 async function publishToDatabase(env,story,user,expectedUpdatedAt){
@@ -52,6 +61,36 @@ export default {async fetch(request,env){
   const d=validate(await request.json()),id=crypto.randomUUID(),now=new Date().toISOString();
   await env.DB.prepare('INSERT INTO articles(id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(id,user.author,user.email,d.title,d.category,d.excerpt,d.body,d.cover,'draft',now,now).run();
   return json({id,author:user.author,status:'draft',updated_at:now},201,corsHeaders)}
+ const photoMatch=path.match(/^\/api\/articles\/([a-f0-9-]{36})\/photos(?:\/([a-f0-9-]{36}))?$/);
+ if(photoMatch){
+  const story=user.role==='owner'?await env.DB.prepare('SELECT * FROM articles WHERE id=?').bind(photoMatch[1]).first():await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(photoMatch[1],user.email).first();
+  if(!story)return json({error:'Not found'},404,corsHeaders);
+  if(request.method==='GET'&&photoMatch[2]){
+   const photo=await env.DB.prepare('SELECT * FROM journal_photos WHERE id=? AND article_id=?').bind(photoMatch[2],story.id).first();
+   if(!photo)return json({error:'Photo not found'},404,corsHeaders);
+   const object=await env.JOURNAL_PHOTOS?.get(photo.object_key);
+   if(!object)return json({error:'Photo unavailable'},404,corsHeaders);
+   return new Response(object.body,{headers:{'content-type':photo.content_type,'cache-control':'private, no-store','x-content-type-options':'nosniff','content-disposition':'inline'}});
+  }
+  if(request.method==='POST'&&!photoMatch[2]){
+   if(story.status!=='draft')return json({error:'Only drafts accept new photographs'},409,corsHeaders);
+   if(!env.JOURNAL_PHOTOS)return json({error:'Journal photo storage unavailable'},503,corsHeaders);
+   const limit=5*1024*1024;
+   const size=Number(request.headers.get('content-length')||0);
+   if(size>limit+32768)return json({error:'Image must be smaller than 5 MB'},413,corsHeaders);
+   const form=await request.formData();
+   const file=form.get('photo');
+   if(!file||typeof file.arrayBuffer!=='function'||!photoTypes[file.type])return json({error:'Choose a JPG, PNG, WebP or GIF photograph'},422,corsHeaders);
+   if(file.size>limit||file.size<16)return json({error:'Image must be between 16 bytes and 5 MB'},413,corsHeaders);
+   const bytes=new Uint8Array(await file.arrayBuffer());
+   if(!validPhoto(bytes,file.type))return json({error:'This file is not a valid supported image'},422,corsHeaders);
+   const photoId=crypto.randomUUID(),key=story.id+'/'+photoId+'.'+photoTypes[file.type];
+   await env.JOURNAL_PHOTOS.put(key,bytes,{httpMetadata:{contentType:file.type}});
+   await env.DB.prepare('INSERT INTO journal_photos(id,article_id,owner_email,object_key,content_type,created_at) VALUES(?,?,?,?,?,?)').bind(photoId,story.id,story.owner_email,key,file.type,new Date().toISOString()).run();
+   return json({id:photoId,url:photoUrl(photoId),previewUrl:'/api/articles/'+story.id+'/photos/'+photoId},201,corsHeaders);
+  }
+  return json({error:'Not found'},404,corsHeaders);
+ }
  const match=path.match(/^\/api\/articles\/([a-f0-9-]{36})(\/publish)?$/);
  if(match){const id=match[1];const story=user.role==='owner'?await env.DB.prepare('SELECT * FROM articles WHERE id=?').bind(id).first():await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).first();if(!story)return json({error:'Not found'},404,corsHeaders);
   if(match[2]&&request.method==='POST'){
