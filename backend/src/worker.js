@@ -27,11 +27,11 @@ async function identity(request,env){
 }
 function validate(d){if(!d||typeof d!=='object'||Array.isArray(d))throw Error('Invalid story');const out={};for(const k of ['title','category','excerpt','body','cover']){if(d[k]!==undefined&&typeof d[k]!=='string')throw Error('Invalid '+k);out[k]=String(d[k]||'').trim()}if(out.title.length>200||out.category.length>100||out.excerpt.length>1000||out.body.length>100000||out.cover.length>2000)throw Error('Story too long');if(out.cover&&!/^https:\/\//i.test(out.cover))throw Error('Cover must be an HTTPS URL');return out}
 function slugify(s){return s.normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70)||'story'}
-async function publishToDatabase(env,story,user){
+async function publishToDatabase(env,story,user,expectedUpdatedAt){
  const slug=slugify(story.title)+'-'+story.id.slice(0,8);
  const now=new Date().toISOString();
- const result=await env.DB.prepare("UPDATE articles SET status='published',slug=?,published_at=?,updated_at=? WHERE id=? AND owner_email=? AND status='draft'").bind(slug,now,now,story.id,user.email).run();
- if(!result.success||result.meta?.changes!==1)throw Error('Publication conflict, reload and try again');
+ const result=await env.DB.prepare("UPDATE articles SET status='published',slug=?,published_at=?,updated_at=? WHERE id=? AND owner_email=? AND status='draft' AND updated_at=?").bind(slug,now,now,story.id,user.email,expectedUpdatedAt).run();
+ if(!result.success||result.meta?.changes!==1)return null;
  return {status:'published',slug};
 }
 export default {async fetch(request,env){
@@ -53,9 +53,13 @@ export default {async fetch(request,env){
  const match=path.match(/^\/api\/articles\/([a-f0-9-]{36})(\/publish)?$/);
  if(match){const id=match[1];const story=await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).first();if(!story)return json({error:'Not found'},404,corsHeaders);
   if(match[2]&&request.method==='POST'){
+   const publishInput=await request.json().catch(()=>null);
+   if(!publishInput||typeof publishInput.expectedUpdatedAt!=='string'||!publishInput.expectedUpdatedAt)return json({error:'Reload story before publishing'},428,corsHeaders);
+   if(story.updated_at!==publishInput.expectedUpdatedAt)return json({error:'Story changed on another device. Reload before publishing.'},409,corsHeaders);
    if(!story.title.trim()||!story.excerpt.trim()||!story.body.trim())return json({error:'Title, introduction and body are required'},422,corsHeaders);
    if(story.status==='published')return json({error:'Already published'},409,corsHeaders);
-   const result=await publishToDatabase(env,story,user);
+   const result=await publishToDatabase(env,story,user,publishInput.expectedUpdatedAt);
+   if(!result)return json({error:'Story changed while publishing. Reload before publishing.'},409,corsHeaders);
    return json(result,200,corsHeaders)}
   if(!match[2]&&request.method==='PUT'){
     if(story.status==='published')return json({error:'Published stories are read-only'},409,corsHeaders);
