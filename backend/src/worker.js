@@ -1,7 +1,6 @@
 // Cloudflare Worker: authenticated, isolated author drafts with D1 publication.
 // Cloudflare Access JWT is verified against the team's JWKS on EVERY request.
-// build-worker.mjs injects the Writing Desk HTML at deployment time.
-const EDITOR_HTML = null;
+// Writing Desk HTML is served from private, Worker-bound KV; it is never a public KV endpoint.
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}});
 const bytes=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
 function cors(request,env){const origin=request.headers.get('Origin');return origin===env.ALLOWED_ORIGIN?{'access-control-allow-origin':origin,'access-control-allow-headers':'authorization, content-type','access-control-allow-methods':'GET, POST, PUT, DELETE, OPTIONS','access-control-allow-credentials':'true','vary':'Origin'}:{}}
@@ -43,7 +42,7 @@ export default {async fetch(request,env){
  if(!env.DB)return json({error:'Database not configured'},503,corsHeaders);
  const url=new URL(request.url),path=url.pathname.replace(/\/$/,'');
  try{
- if(path==='/desk'&&request.method==='GET'){return new Response(EDITOR_HTML||'The editor bundle has not been built',{status:EDITOR_HTML?200:503,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY','content-security-policy':"default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'"}})}
+ if(path==='/desk'&&request.method==='GET'){const editorHtml=await env.EDITOR_ASSETS?.get('desk-v1');return new Response(editorHtml||'The editor assets have not been uploaded',{status:editorHtml?200:503,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY','content-security-policy':"default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'"}})}
  if(path==='/config.json'&&request.method==='GET')return json({apiUrl:new URL(request.url).origin},200,corsHeaders);
  if(path==='/api/me'&&request.method==='GET')return json({...user,publishEnabled:true},200,corsHeaders);
  if(path==='/api/articles'&&request.method==='GET'){const data=await env.DB.prepare('SELECT * FROM articles WHERE owner_email=? ORDER BY updated_at DESC').bind(user.email).all();return json({articles:data.results},200,corsHeaders)}
