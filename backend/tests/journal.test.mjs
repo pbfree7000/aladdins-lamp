@@ -18,13 +18,14 @@ function jwt(email){
  return signed+'.'+createSign('RSA-SHA256').update(signed).sign(privateKey).toString('base64url');
 }
 class FakeD1{
- constructor(){this.rows=new Map()}
+ constructor(){this.rows=new Map();this.photos=new Map()}
  prepare(sql){
   const prepared={bind:(...p)=>({
-   first:async()=>{if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d&&(p.length===1||d.owner_email===p[1])?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
+   first:async()=>{if(sql.includes('FROM journal_photos WHERE id=?')){const ph=this.photos.get(p[0]);return ph?.article_id===p[1]?{...ph}:null}if(sql.includes('SELECT p.object_key,p.content_type')){const ph=this.photos.get(p[0]);return ph&&this.rows.get(ph.article_id)?.status==='published'?{...ph}:null}if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d&&(p.length===1||d.owner_email===p[1])?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
    all:async()=>{if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes('SELECT * FROM articles ORDER BY'))return {results:[...this.rows.values()].map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
    run:async()=>{let changes=0;
-    if(sql.startsWith('INSERT INTO articles')){const [id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at]=p;this.rows.set(id,{id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at,slug:null,published_at:null});changes=1}
+    if(sql.startsWith('INSERT INTO journal_photos')){const [id,article_id,owner_email,object_key,content_type,created_at]=p;this.photos.set(id,{id,article_id,owner_email,object_key,content_type,created_at});changes=1}
+    else if(sql.startsWith('INSERT INTO articles')){const [id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at]=p;this.rows.set(id,{id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at,slug:null,published_at:null});changes=1}
     else if(sql.includes("SET status='published'")){const [slug,published_at,updated_at,id,owner_email,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status==='draft'&&d.updated_at===expected){Object.assign(d,{status:'published',slug,published_at,updated_at});changes=1}}
     else if(sql.startsWith('UPDATE articles SET title=')){const [title,category,excerpt,body,cover,updated_at,id,owner_email,status,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status===status&&d.updated_at===expected){Object.assign(d,{title,category,excerpt,body,cover,updated_at});changes=1}}
     else if(sql.startsWith('DELETE FROM articles')){const [id,email]=p;const d=this.rows.get(id);if(d&&d.owner_email===email){this.rows.delete(id);changes=1}}
@@ -35,7 +36,8 @@ class FakeD1{
  }
 }
 const DB=new FakeD1();
-const env={DB,EDITOR_ASSETS:{get:async()=>'<html><body>Publish online</body></html>'},ACCESS_TEAM_DOMAIN:'unit.cloudflareaccess.com',ACCESS_AUD:'journal-test-aud',OWNER_EMAIL:'owner@example.com',ALLOWED_AUTHORS:'mike@example.com:Mike,rachael@example.com:Rachael',ALLOWED_ORIGIN:'https://aladdinslamp.xyz'};
+const objects=new Map();const JOURNAL_PHOTOS={put:async(k,bytes)=>objects.set(k,bytes),get:async(k)=>objects.has(k)?{body:objects.get(k)}:null};
+const env={DB,JOURNAL_PHOTOS,EDITOR_ASSETS:{get:async()=>'<html><body>Publish online</body></html>'},ACCESS_TEAM_DOMAIN:'unit.cloudflareaccess.com',ACCESS_AUD:'journal-test-aud',OWNER_EMAIL:'owner@example.com',ALLOWED_AUTHORS:'mike@example.com:Mike,rachael@example.com:Rachael',ALLOWED_ORIGIN:'https://aladdinslamp.xyz'};
 function request(path,method='GET',email='mike@example.com',payload,origin){
  return new Request('https://journal-api.aladdinslamp.xyz'+path,{method,headers:{'Cf-Access-Jwt-Assertion':jwt(email),...(payload?{'content-type':'application/json'}:{}),...(origin?{Origin:origin}:{})},body:payload?JSON.stringify(payload):undefined})
 }
@@ -96,10 +98,31 @@ test('owner can oversee both authors without impersonating them',async()=>{
  const latest=(await (await worker.fetch(request('/api/articles','GET','owner@example.com'),env)).json()).articles.find(d=>d.id===r.id);
  assert.equal((await worker.fetch(request('/api/articles/'+r.id+'/publish','POST','owner@example.com',{expectedUpdatedAt:latest.updated_at}),env)).status,200);
 });
+test('photos stay private until publication and reject unauthorized access and spoofed formats',async()=>{
+ const draft=await (await worker.fetch(request('/api/articles','POST','mike@example.com',article),env)).json();
+ const makeReq=(buf,type,email='mike@example.com')=>{
+  const form=new FormData();form.append('photo',new Blob([buf],{type}),'photo.jpg');
+  return new Request('https://journal-api.aladdinslamp.xyz/api/articles/'+draft.id+'/photos',{method:'POST',headers:{'Cf-Access-Jwt-Assertion':jwt(email)},body:form});
+ };
+ const png=Uint8Array.from([137,80,78,71,13,10,26,10,...Array(24).fill(0)]);
+ assert.equal((await worker.fetch(makeReq(png,'image/jpeg'),env)).status,422);
+ assert.equal((await worker.fetch(makeReq(png,'image/png','rachael@example.com'),env)).status,404);
+ const uploaded=await worker.fetch(makeReq(png,'image/png'),env);
+ assert.equal(uploaded.status,201);
+ const photo=await uploaded.json();
+ assert.match(photo.url,/\/media\//);
+ assert.equal((await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS})).status,404);
+ assert.equal((await worker.fetch(request(photo.previewUrl,'GET','rachael@example.com'),env)).status,404);
+ assert.equal((await worker.fetch(request(photo.previewUrl),env)).status,200);
+ const pub=await worker.fetch(request('/api/articles/'+draft.id+'/publish','POST','mike@example.com',{expectedUpdatedAt:draft.updated_at}),env);
+ assert.equal(pub.status,200);
+ const live=await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS});
+ assert.equal(live.status,200);assert.equal(live.headers.get('content-type'),'image/png');
+});
 test('public feed includes only published fields and no draft ownership',async()=>{
  const a=await publicFeed.fetch(new Request('https://journal-feed.aladdinslamp.xyz/api/articles'),{DB});
  assert.equal(a.status,200);const payload=await a.json();
- assert.equal(payload.posts.length,2);
+ assert.equal(payload.posts.length,3);
  assert.equal(payload.posts[0].status,'published');
  assert.ok(!JSON.stringify(payload).includes('owner_email'));
  assert.equal((await publicFeed.fetch(new Request('https://journal-feed.aladdinslamp.xyz/api/articles',{method:'POST'}),{DB})).status,405);
