@@ -79,6 +79,13 @@ async function main(){
   await desk.locator('.story-photo button').filter({hasText:'↑ Move'}).click();
   assert.equal(await desk.locator('#storyCanvas > .story-block').first().locator('.story-photo').count(),1,'Photo must move above paragraph');
   await desk.locator('.story-photo button').filter({hasText:'↓ Move'}).click();
+  await desk.locator('.story-part-text').last().evaluate(el=>{
+   const clipboard=new DataTransfer();
+   clipboard.items.add(new File([new Uint8Array([137,80,78,71,13,10,26,10,...Array(24).fill(0)])],'pasted.png',{type:'image/png'}));
+   el.dispatchEvent(new ClipboardEvent('paste',{clipboardData:clipboard,bubbles:true,cancelable:true}));
+  });
+  await desk.locator('.story-photo').nth(1).waitFor({timeout:12000});
+  assert.equal(await desk.locator('.story-photo').count(),2,'Pasted image must appear as second inline story photograph');
   await desk.getByText('Saved securely').waitFor({timeout:12000});
   assert.equal(articles.size,1,'Autosave should persist exactly one draft');
   let serialized='',blocks=[];
