@@ -7,8 +7,8 @@ compatibility_date = "2026-11-01"
 # Optional: ALLOWED_AUTHORS (comma-separated email:author pairs)
 [[d1_databases]]
 binding = "DB"
-database_name = "aladdins-journal"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_name = "aladdins-lamp-journal"
+database_id = "153117ce-cb3d-4ead-86f8-fa9e5e61c26e"
 
 [vars]
 GITHUB_REPO = "pbfree7000/aladdins-lamp"
