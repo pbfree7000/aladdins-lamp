@@ -1,0 +1,38 @@
+name: Generate navigation-free AL hero candidates
+on:
+  push:
+    branches: [feature/navfree-all-rooms]
+    paths: [scripts/produce_navfree_heroes.py]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image libraries
+        run: pip install numpy==2.2.6 pillow==11.3.0 opencv-python-headless==4.11.0.86
+      - name: Render six navigation-free candidates
+        run: python scripts/produce_navfree_heroes.py
+      - name: Upload visual proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: al-navfree-six-review-${{ github.run_id }}
+          path: |
+            artifacts/navfree-six-review.jpg
+            assets/*-navfree.jpg
+          retention-days: 14
+      - name: Commit generated assets
+        run: |
+          git config user.name "AL Frontend QA"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/home-navfree.jpg assets/treasure-hunt-navfree.jpg assets/fresh-finds-navfree.jpg assets/rachaels-apothecary-navfree.jpg assets/autumns-underground-navfree.jpg assets/treasure-journal-navfree.jpg
+          git commit -m "Generate navigation-free artwork for six rooms [skip ci]"
+          git push origin HEAD:feature/navfree-all-rooms
