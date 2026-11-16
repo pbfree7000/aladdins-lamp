@@ -124,7 +124,14 @@ async function main(){
   console.log('PASS: journal feed, static fallback, article routes, search and six shop routes');
   const desk=await browser.newPage();
   const editorErrors=[];desk.on('pageerror',e=>editorErrors.push(e.message));
-  const articles=new Map();let n=0,uploadN=0;const uploadedPhotoRequests=[];
+  const articles=new Map(),revisionHistory=new Map();let n=0,uploadN=0;const uploadedPhotoRequests=[];
+  const snapshot=d=>{
+   const list=revisionHistory.get(d.id)||[];
+   const next={article_id:d.id,version:list.length+1,title:d.title,category:d.category,excerpt:d.excerpt,body:d.body,cover:d.cover,status:d.status,slug:d.slug||null,published_at:d.published_at||null,source_updated_at:d.updated_at,recorded_at:new Date().toISOString()};
+   const last=list.at(-1);
+   if(!last||['title','category','excerpt','body','cover','status','slug','published_at'].some(k=>last[k]!==next[k]))list.push(next);
+   revisionHistory.set(d.id,list)
+  };
   await desk.route('**/config.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({apiUrl:'https://journal-api.aladdinslamp.xyz'})}));
   await desk.route('https://journal-api.aladdinslamp.xyz/api/**',r=>{
    const u=new URL(r.request().url()),p=u.pathname,method=r.request().method();
@@ -133,7 +140,7 @@ async function main(){
    let status=200,value={};
    if(p==='/api/me')value={email:'rachael@example.com',author:'Rachael',publishEnabled:true};
    else if(p==='/api/articles'&&method==='GET')value={articles:[...articles.values()]};
-   else if(p==='/api/articles'&&method==='POST'){const data=JSON.parse(r.request().postData());const id='11111111-1111-4111-8111-'+String(++n).padStart(12,'0'),updated_at=new Date().toISOString();articles.set(id,{id,...data,author:'Rachael',owner_email:'rachael@example.com',updated_at,status:'draft'});value={id,author:'Rachael',updated_at,status:'draft'};status=201}
+   else if(p==='/api/articles'&&method==='POST'){const data=JSON.parse(r.request().postData());const id='11111111-1111-4111-8111-'+String(++n).padStart(12,'0'),updated_at=new Date().toISOString();articles.set(id,{id,...data,author:'Rachael',owner_email:'rachael@example.com',updated_at,status:'draft'});snapshot(articles.get(id));value={id,author:'Rachael',updated_at,status:'draft'};status=201}
    else if(p.endsWith('/photos')&&method==='POST'){
     uploadedPhotoRequests.push(r.request().postDataBuffer().length);
     const articleId=p.split('/')[3];
@@ -143,19 +150,29 @@ async function main(){
    else if(p.includes('/photos/')&&method==='GET')return r.fulfill({status:200,contentType:'image/png',headers,body:png});
    else {const id=p.split('/')[3],d=articles.get(id);
     if(!d){status=404;value={error:'Not found'}}
-    else if(p.endsWith('/publish')){d.status='published';d.slug='qa-editor-story';d.published_at=new Date().toISOString();value={status:'published',slug:d.slug}}
+    else if(p.endsWith('/publish')){d.status='published';d.slug='qa-editor-story';d.published_at=new Date().toISOString();snapshot(d);value={status:'published',slug:d.slug}}
     else if(p.endsWith('/revise')&&method==='POST'){
      const data=JSON.parse(r.request().postData()||'{}');
      if(d.status!=='published'){status=409;value={error:'Not published'}}
      else if(data.expectedUpdatedAt!==d.updated_at){status=409;value={error:'Story changed on another device'}}
      else{
       const updated_at=new Date(Date.now()+1000).toISOString();
-      Object.assign(d,{title:data.title,excerpt:data.excerpt,body:data.body,category:data.category,cover:data.cover,updated_at});
+      Object.assign(d,{title:data.title,excerpt:data.excerpt,body:data.body,category:data.category,cover:data.cover,updated_at});snapshot(d);
       value={saved:true,status:'published',updated_at,slug:d.slug,published_at:d.published_at}
      }
     }
-    else if(method==='PUT'){const data=JSON.parse(r.request().postData());Object.assign(d,data,{updated_at:new Date().toISOString()});value={saved:true,updated_at:d.updated_at}}
-    else if(method==='DELETE'){articles.delete(id);value={deleted:true}}
+    else if(method==='PUT'){const data=JSON.parse(r.request().postData());Object.assign(d,data,{updated_at:new Date().toISOString()});snapshot(d);value={saved:true,updated_at:d.updated_at}}
+    else if(method==='GET'&&p.includes('/revisions')){
+     const list=revisionHistory.get(id)||[];
+     const v=p.match(/\/revisions\/([0-9]+)$/);
+     if(v){const revision=list.find(x=>x.version===Number(v[1]));if(!revision){status=404;value={error:'Version not found'}}else value={revision}}
+     else{const before=Number(u.searchParams.get('before')||2147483647);
+      const filtered=list.filter(x=>x.version<before).slice().reverse();
+      const versions=filtered.slice(0,40).map(({version,title,status,slug,source_updated_at,recorded_at})=>({version,title,status,slug,source_updated_at,recorded_at}));
+      value={article_id:id,author:d.author,versions,next_before:filtered.length>40?versions.at(-1).version:null}
+     }
+    }
+    else if(method==='DELETE'){articles.delete(id);revisionHistory.delete(id);value={deleted:true}}
    }
    return r.fulfill({status,contentType:'application/json',headers,body:JSON.stringify(value)});
   });
@@ -249,6 +266,20 @@ async function main(){
   assert.equal(revised.published_at,original.published_at,'Publication date remains unchanged');
   assert.notEqual(revised.cover,original.cover,'Live cover must change only after explicit update');
   assert.ok(revised.body.includes('Corrected ginger article'),'Published text should update after confirmation');
+  await desk.locator('#historyBtn').click();
+  await desk.locator('#historyItems .history-entry').first().waitFor({timeout:12000});
+  assert.ok(await desk.locator('#historyItems .history-entry').count()>=2,'Saved story should have multiple revisions');
+  await desk.locator('#historyItems .history-entry').nth(1).click();
+  await desk.locator('#historyPreview').getByText('Preview of version',{exact:false}).waitFor({timeout:12000});
+  assert.ok((await desk.locator('#historyPreview .preview').innerText()).includes('An illustrative story.'),'Earlier version preview shows original story');
+  const revisionsBeforeRestore=revisionHistory.get(original.id).length;
+  await desk.getByRole('button',{name:'Restore this version'}).click();
+  await desk.getByText('Editing a private copy',{exact:false}).waitFor({timeout:12000});
+  assert.equal(articles.get(original.id).body,revised.body,'Preview restoration must not modify live article');
+  await desk.locator('#cloudPublishBtn').click();
+  await desk.getByText('Rachael · Published').waitFor({timeout:12000});
+  assert.equal(articles.get(original.id).slug,original.slug,'Restored publication must retain shared URL');
+  assert.equal(revisionHistory.get(original.id).length,revisionsBeforeRestore+1,'Restoration must append a new snapshot');
   assert.equal(await desk.locator('header a').getAttribute('href'),'https://aladdinslamp.xyz/#journal','Public Journal link should lead to the storefront');
   await desk.locator('#new').click();
   await desk.locator('#title').fill('Signout save test');
