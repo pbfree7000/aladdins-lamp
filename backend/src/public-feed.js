@@ -9,8 +9,15 @@ export default {
   const photoId=url.pathname.match(/^\/media\/([a-f0-9-]{36})$/);
   if(photoId&&(request.method==='GET'||request.method==='HEAD')){
    try{
-    const photo=await env.DB.prepare("SELECT p.object_key,p.content_type FROM journal_photos p JOIN articles a ON a.id=p.article_id WHERE p.id=? AND a.status='published'").bind(photoId[1]).first();
+    const photo=await env.DB.prepare("SELECT p.object_key,p.content_type,a.cover,a.body FROM journal_photos p JOIN articles a ON a.id=p.article_id WHERE p.id=? AND a.status='published'").bind(photoId[1]).first();
     if(!photo||!env.JOURNAL_PHOTOS)return new Response('Not found',{status:404,headers:{'cache-control':'no-store'}});
+    const usedAsCover=String(photo.cover||'')==='https://journal-feed.aladdinslamp.xyz/media/'+photoId[1];
+    let usedInBody=false;
+    if(String(photo.body||'').startsWith('ALADDIN_BLOCKS_V1:')){
+     try{const blocks=JSON.parse(photo.body.slice('ALADDIN_BLOCKS_V1:'.length));usedInBody=Array.isArray(blocks)&&blocks.some(b=>b?.kind==='image'&&b.id===photoId[1])}catch{}
+    }
+    // Attachment metadata is not publication permission. Only explicitly used photos are public.
+    if(!usedAsCover&&!usedInBody)return new Response('Not found',{status:404,headers:{'cache-control':'no-store'}});
     const object=await env.JOURNAL_PHOTOS.get(photo.object_key);
     if(!object)return new Response('Not found',{status:404});
     return new Response(request.method==='HEAD'?null:object.body,{headers:{'content-type':photo.content_type,'cache-control':'public, max-age=3600','x-content-type-options':'nosniff','content-disposition':'inline'}});
