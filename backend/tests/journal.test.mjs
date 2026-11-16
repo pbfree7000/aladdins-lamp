@@ -18,17 +18,24 @@ function jwt(email){
  return signed+'.'+createSign('RSA-SHA256').update(signed).sign(privateKey).toString('base64url');
 }
 class FakeD1{
- constructor(){this.rows=new Map();this.photos=new Map()}
+ constructor(){this.rows=new Map();this.photos=new Map();this.revisions=new Map()}
+ remember(row){
+  const prior=this.revisions.get(row.id)||[];
+  const snapshot={article_id:row.id,version:prior.length+1,title:row.title,category:row.category,excerpt:row.excerpt,body:row.body,cover:row.cover,status:row.status,slug:row.slug,published_at:row.published_at,source_updated_at:row.updated_at,recorded_at:new Date().toISOString()};
+  const last=prior.at(-1);
+  if(last&&['title','category','excerpt','body','cover','status','slug','published_at'].every(k=>last[k]===snapshot[k]))return;
+  prior.push(snapshot);this.revisions.set(row.id,prior)
+ }
  prepare(sql){
   const prepared={bind:(...p)=>({
-   first:async()=>{if(sql.includes('FROM journal_photos WHERE id=?')){const ph=this.photos.get(p[0]);return ph?.article_id===p[1]?{...ph}:null}if(sql.includes('SELECT p.object_key,p.content_type')){const ph=this.photos.get(p[0]);return ph&&this.rows.get(ph.article_id)?.status==='published'?{...ph,cover:this.rows.get(ph.article_id).cover,body:this.rows.get(ph.article_id).body}:null}if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d&&(p.length===1||d.owner_email===p[1])?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
-   all:async()=>{if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes('SELECT * FROM articles ORDER BY'))return {results:[...this.rows.values()].map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
+   first:async()=>{if(sql.includes('FROM article_revisions'))return this.revisions.get(p[0])?.find(v=>v.version===p[1])||null;if(sql.includes('FROM journal_photos WHERE id=?')){const ph=this.photos.get(p[0]);return ph?.article_id===p[1]?{...ph}:null}if(sql.includes('SELECT p.object_key,p.content_type')){const ph=this.photos.get(p[0]);return ph&&this.rows.get(ph.article_id)?.status==='published'?{...ph,cover:this.rows.get(ph.article_id).cover,body:this.rows.get(ph.article_id).body}:null}if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d&&(p.length===1||d.owner_email===p[1])?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
+   all:async()=>{if(sql.includes('FROM article_revisions'))return {results:(this.revisions.get(p[0])||[]).filter(v=>v.version<p[1]).slice().sort((a,b)=>b.version-a.version).slice(0,41).map(({version,title,status,slug,source_updated_at,recorded_at})=>({version,title,status,slug,source_updated_at,recorded_at}))};if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes('SELECT * FROM articles ORDER BY'))return {results:[...this.rows.values()].map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
    run:async()=>{let changes=0;
     if(sql.startsWith('INSERT INTO journal_photos')){const [id,article_id,owner_email,object_key,content_type,created_at]=p;this.photos.set(id,{id,article_id,owner_email,object_key,content_type,created_at});changes=1}
-    else if(sql.startsWith('INSERT INTO articles')){const [id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at]=p;this.rows.set(id,{id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at,slug:null,published_at:null});changes=1}
-    else if(sql.includes("SET status='published'")){const [slug,published_at,updated_at,id,owner_email,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status==='draft'&&d.updated_at===expected){Object.assign(d,{status:'published',slug,published_at,updated_at});changes=1}}
-    else if(sql.startsWith('UPDATE articles SET title=')){const [title,category,excerpt,body,cover,updated_at,id,owner_email,status,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status===status&&d.updated_at===expected){Object.assign(d,{title,category,excerpt,body,cover,updated_at});changes=1}}
-    else if(sql.startsWith('DELETE FROM articles')){const [id,email]=p;const d=this.rows.get(id);if(d&&d.owner_email===email){this.rows.delete(id);changes=1}}
+    else if(sql.startsWith('INSERT INTO articles')){const [id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at]=p;this.rows.set(id,{id,author,owner_email,title,category,excerpt,body,cover,status,created_at,updated_at,slug:null,published_at:null});changes=1;this.remember(this.rows.get(id))}
+    else if(sql.includes("SET status='published'")){const [slug,published_at,updated_at,id,owner_email,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status==='draft'&&d.updated_at===expected){Object.assign(d,{status:'published',slug,published_at,updated_at});changes=1;this.remember(d)}}
+    else if(sql.startsWith('UPDATE articles SET title=')){const [title,category,excerpt,body,cover,updated_at,id,owner_email,status,expected]=p;const d=this.rows.get(id);if(d&&d.owner_email===owner_email&&d.status===status&&d.updated_at===expected){Object.assign(d,{title,category,excerpt,body,cover,updated_at});changes=1;this.remember(d)}}
+    else if(sql.startsWith('DELETE FROM articles')){const [id,email]=p;const d=this.rows.get(id);if(d&&d.owner_email===email){this.rows.delete(id);changes=1;this.revisions.delete(id)}}
     else throw Error('Unsupported run SQL: '+sql);
     return {success:true,meta:{changes}}
    }
@@ -181,6 +188,40 @@ test('authors can replace photos and revise published stories without changing t
  assert.equal((await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS})).status,200,'Only committed replacement becomes public');
  const stale=await worker.fetch(request('/api/articles/'+id+'/revise','POST','rachael@example.com',update),env);
  assert.equal(stale.status,409,'A stale device cannot overwrite a newer published article');
+});
+test('private version history records each meaningful save, isolates authors and allows safe restoration',async()=>{
+ const localDB=new FakeD1(),privateEnv={...env,DB:localDB};
+ const created=await (await worker.fetch(request('/api/articles','POST','rachael@example.com',{...article,title:'Ginger beginnings'}),privateEnv)).json();
+ const id=created.id;
+ let list=await (await worker.fetch(request('/api/articles/'+id+'/revisions','GET','rachael@example.com'),privateEnv)).json();
+ assert.equal(list.versions.length,1,'A new story must have an initial snapshot');
+ const old=await worker.fetch(request('/api/articles/'+id+'/revisions','GET','mike@example.com'),privateEnv);
+ assert.equal(old.status,404,'Other authors must not access revision metadata');
+ const blocked=await worker.fetch(request('/api/articles/'+id+'/revisions/1','GET','mike@example.com'),privateEnv);
+ assert.equal(blocked.status,404,'Other authors must not access revision bodies');
+ const second=await (await worker.fetch(request('/api/articles/'+id,'PUT','rachael@example.com',{...article,title:'First revision',expectedUpdatedAt:created.updated_at}),privateEnv)).json();
+ assert.ok(second.updated_at);
+ const p=await worker.fetch(request('/api/articles/'+id+'/publish','POST','rachael@example.com',{expectedUpdatedAt:second.updated_at}),privateEnv);
+ assert.equal(p.status,200);
+ list=await (await worker.fetch(request('/api/articles/'+id+'/revisions','GET','rachael@example.com'),privateEnv)).json();
+ assert.equal(list.versions.length,3);
+ assert.deepEqual(list.versions.map(x=>x.version),[3,2,1]);
+ const first=await (await worker.fetch(request('/api/articles/'+id+'/revisions/1','GET','rachael@example.com'),privateEnv)).json();
+ assert.equal(first.revision.title,'Ginger beginnings');
+ assert.equal(first.revision.status,'draft');
+ const saved=localDB.rows.get(id);
+ const restored=await worker.fetch(request('/api/articles/'+id+'/revise','POST','rachael@example.com',{title:first.revision.title,category:first.revision.category,excerpt:first.revision.excerpt,body:first.revision.body,cover:first.revision.cover,expectedUpdatedAt:saved.updated_at}),privateEnv);
+ assert.equal(restored.status,200);
+ assert.equal((await restored.json()).slug,saved.slug,'Restore cannot change public link');
+ const after=await (await worker.fetch(request('/api/articles/'+id+'/revisions','GET','rachael@example.com'),privateEnv)).json();
+ assert.equal(after.versions[0].version,4,'Restoration creates a NEW version rather than overwriting');
+ assert.equal(after.versions[0].status,'published','Published status is preserved during restoration');
+ const page2=await (await worker.fetch(request('/api/articles/'+id+'/revisions?before=3','GET','rachael@example.com'),privateEnv)).json();
+ assert.deepEqual(page2.versions.map(x=>x.version),[2,1],'History cursor returns older records');
+ const invalid=await worker.fetch(request('/api/articles/'+id+'/revisions?before=NOT_A_NUMBER','GET','rachael@example.com'),privateEnv);
+ assert.equal(invalid.status,422);
+ const missing=await worker.fetch(request('/api/articles/'+id+'/revisions/999','GET','rachael@example.com'),privateEnv);
+ assert.equal(missing.status,404);
 });
 test('image-only rich layout is not a publishable story',async()=>{
  const imageOnly={...article,body:'ALADDIN_BLOCKS_V1:'+JSON.stringify([{kind:'image',id:'aabbccdd-1111-4111-8111-000000000001',caption:'Photo',size:'medium',align:'center'}])};
