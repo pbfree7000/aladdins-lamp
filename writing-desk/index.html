@@ -26,13 +26,36 @@
 .preview figcaption{text-align:center;color:#705335;font:italic 14px Georgia,serif;margin-top:8px}
 .preview blockquote{border-left:4px solid #bd955a;margin:18px 0;padding-left:16px}
 @media(max-width:740px){.story-photo.size-small img{max-width:75%}.story-photo.size-medium img{max-width:100%}}
+
+/* Private revision history, accessible on phones without affecting the public storefront. */
+.history-panel{border:1px solid #ad8a57;background:#151f1e;border-radius:12px;padding:18px;margin:18px 0}
+.history-panel h2{font:italic 700 25px Georgia,serif;color:#f0d5a0;margin:0}
+.history-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:9px;margin:14px 0}
+.history-entry{width:100%;min-height:76px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left}
+.history-entry strong{color:#f3dcb1;font:700 15px Georgia,serif}
+.history-entry small{color:#cfbd9c;font:12px/1.5 system-ui,sans-serif}
+.history-entry[aria-current=true]{border-color:#e6be7d;background:#523a28}
+.history-preview{margin:18px 0 2px;border-top:1px solid #866a46;padding-top:18px}
+.history-preview .preview{max-width:100%;min-height:0;margin-top:12px}
+.history-preview .row{justify-content:flex-start}
+.history-preview .preview *{overflow-wrap:anywhere}
+@media(max-width:740px){.history-panel{padding:14px}.history-preview .preview{padding:18px}.history-items{grid-template-columns:1fr}}
+
 </style></head><body><header><strong>✦ The Treasure Journal <span class="muted">Writing Desk</span></strong><div class="desk-header-actions"><a href="https://aladdinslamp.xyz/#journal">View public journal</a><button type="button" id="signOutBtn" aria-label="Sign Out of the Writing Desk">Sign Out</button></div></header>
 <main><aside><h2>YOUR NOTEBOOK</h2><label for="author">Writing as</label><select id="author"><option>Rachael</option><option>Mike</option></select><div class="toolbar"><button id="new">+ New story</button></div><div id="stories"></div><p class="muted">Drafts are saved to the secure account automatically after connection. Backups remain available.</p><button id="importBtn" class="ghost">Import draft or backup</button><button id="backupBtn" class="ghost" style="margin-top:8px">Back up all stories</button><input id="importFile" type="file" accept="application/json" class="hidden"></aside>
 <section class="paper"><div class="row space"><span id="status" class="muted">Private draft</span><div class="row"><button id="writeBtn">Write</button><button id="previewBtn">Preview</button><button id="exportBtn">Export draft</button><button id="publishBtn" class="primary">Prepare for publishing</button></div></div>
 <div id="write"><label for="title">Story title</label><input id="title" class="title" placeholder="Give your story a title…"><div class="row"><div style="flex:1;min-width:180px"><label for="category">Category</label><select id="category"><option>Behind the Counter</option><option>Fresh Finds</option><option>Field Notes</option><option>The Silver Vault</option><option>Rachael’s Apothecary</option><option>Treasure Hunt</option><option>Collecting Guides</option></select></div><div style="flex:1;min-width:180px"><label for="cover">Cover photo (optional)</label><input id="cover" placeholder="Paste a direct image URL, or add a photo below"><span id="coverHelp" class="muted" role="status">Best: choose a photo from your device. Stock-photo listing pages are not image files.</span><label for="photoFile">Add a photo from your device</label><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><label for="photoCamera">Or take a new photo with your phone</label><input id="photoCamera" type="file" accept="image/*" capture="environment"><span id="photoStatus" class="muted">Choose, take, drop or paste a cover photo. Large photos are resized automatically.</span></div></div><label for="excerpt">Short introduction</label><textarea id="excerpt" style="min-height:85px" placeholder="One or two sentences to introduce the story…"></textarea><label for="storyCanvas">Your story</label><p class="story-help">Write naturally. Paste a photo where the cursor is, or use Add photo. Drag pictures to move them, or use the arrow buttons.</p><div class="toolbar"><button data-insert="heading">Heading</button><button data-insert="quote">Quote</button><button data-insert="bullet">List</button><button data-insert="link">Link</button><button id="addStoryPhoto" type="button">+ Add photo in story</button><button id="addStoryText" type="button">+ Add paragraph</button></div><input id="inlinePhotoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden"><div id="storyCanvas" class="story-canvas" role="region" aria-label="Visual story editor"></div><p id="inlinePhotoStatus" class="muted" role="status">Pictures can appear between any two paragraphs. Click a paragraph before adding a picture to choose its position.</p><textarea id="body" class="hidden" aria-hidden="true" tabindex="-1"></textarea></div>
-<div id="preview" class="hidden preview" aria-live="polite"></div><div class="notice"><strong id="connectionState">Local-only writing desk.</strong> <span id="connectionHelp">No shared account connected. Drafts remain on this device. Export a backup regularly.</span></div><div class="row"><button id="connectBtn">Connect secure account</button><button id="syncBtn" disabled>Save now</button><button id="cloudPublishBtn" disabled>Publish online</button><button id="editPublishedBtn" class="ghost hidden" type="button">Edit Published Article</button><button id="facebookShareBtn" class="hidden" type="button">Share on Facebook</button><button id="shareStoryBtn" class="hidden" type="button">Share story</button></div><div class="row space"><span id="saved" class="muted">Ready</span><button id="deleteBtn" class="ghost">Delete this draft</button></div></section></main>
+<div id="preview" class="hidden preview" aria-live="polite"></div><div class="notice"><strong id="connectionState">Local-only writing desk.</strong> <span id="connectionHelp">No shared account connected. Drafts remain on this device. Export a backup regularly.</span></div><div class="row"><button id="connectBtn">Connect secure account</button><button id="syncBtn" disabled>Save now</button><button id="cloudPublishBtn" disabled>Publish online</button><button id="editPublishedBtn" class="ghost hidden" type="button">Edit Published Article</button><button id="historyBtn" class="ghost" type="button" disabled>Version history</button><button id="facebookShareBtn" class="hidden" type="button">Share on Facebook</button><button id="shareStoryBtn" class="hidden" type="button">Share story</button></div><section id="historyPanel" class="history-panel hidden" aria-label="Saved article versions">
+<div class="row space"><h2>Saved versions</h2><button id="historyCloseBtn" class="ghost" type="button">Close history</button></div>
+<p class="muted">Each version is saved securely. Preview an older version before restoring it. Restoring never deletes the history.</p>
+<div id="historyStatus" class="muted" role="status"></div>
+<div id="historyItems" class="history-items"></div>
+<button id="historyMoreBtn" class="ghost hidden" type="button">Show older versions</button>
+<div id="historyPreview" class="history-preview hidden" role="region" aria-label="Version preview"></div>
+</section>
+<div class="row space"><span id="saved" class="muted">Ready</span><button id="deleteBtn" class="ghost">Delete this draft</button></div></section></main>
 <script>
-(()=>{'use strict';const $=id=>document.getElementById(id);const prefix='aladdin-journal-drafts-v1';let drafts=[],active=null,timer,storyBlocks=[{kind:'text',style:'paragraph',text:''}],activeTextIndex=0,inlineUploads=0;const fields=['title','category','cover','excerpt','body'];const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const id=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);function read(){try{const v=JSON.parse(localStorage.getItem(cloudUser?.email?prefix+':'+cloudUser.email:prefix)||'[]');return Array.isArray(v)?v:[]}catch{return []}}function persist(){try{localStorage.setItem(cloudUser?.email?prefix+':'+cloudUser.email:prefix,JSON.stringify(cloudUser&&cloudUser.role!=='owner'?drafts.filter(x=>x.author===cloudUser.author):drafts));$('saved').textContent='Saved on this device · '+new Date().toLocaleTimeString()}catch{$('saved').textContent='Storage unavailable — export your draft now'}}
+(()=>{'use strict';const $=id=>document.getElementById(id);const prefix='aladdin-journal-drafts-v1';let drafts=[],active=null,timer,historyCursor=null,historyArticleId=null,storyBlocks=[{kind:'text',style:'paragraph',text:''}],activeTextIndex=0,inlineUploads=0;const fields=['title','category','cover','excerpt','body'];const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const id=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);function read(){try{const v=JSON.parse(localStorage.getItem(cloudUser?.email?prefix+':'+cloudUser.email:prefix)||'[]');return Array.isArray(v)?v:[]}catch{return []}}function persist(){try{localStorage.setItem(cloudUser?.email?prefix+':'+cloudUser.email:prefix,JSON.stringify(cloudUser&&cloudUser.role!=='owner'?drafts.filter(x=>x.author===cloudUser.author):drafts));$('saved').textContent='Saved on this device · '+new Date().toLocaleTimeString()}catch{$('saved').textContent='Storage unavailable — export your draft now'}}
 const BLOCKS_PREFIX='ALADDIN_BLOCKS_V1:';
 const PHOTO_ID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 const textBlock=(text='',style='paragraph')=>({kind:'text',style,text:String(text)});
@@ -174,6 +197,92 @@ function appendPreviewBlocks(root,raw){
   }
  }
 }
+
+function closeHistory(){$('historyPanel').classList.add('hidden');$('historyPreview').classList.add('hidden');$('historyItems').replaceChildren();historyCursor=null;historyArticleId=null}
+function renderRevisionSnapshot(revision){
+ const node=$('historyPreview');node.replaceChildren();node.classList.remove('hidden');
+ const heading=element('h3','', 'Preview of version '+revision.version);
+ const info=element('p','muted','Saved '+new Date(revision.recorded_at).toLocaleString()+' · '+(revision.status==='published'?'Published':'Draft'));
+ const view=element('div','preview');
+ view.append(element('h1','',revision.title));
+ view.append(element('p','muted',revision.category));
+ if(revision.cover&&/^https:\/\//i.test(revision.cover)){
+  const im=element('img');
+  const id=revision.cover.match(/^https:\/\/journal-feed\.aladdinslamp\.xyz\/media\/([a-f0-9-]{36})$/);
+  im.src=id&&current()?.cloudId?apiUrl+'/api/articles/'+current().cloudId+'/photos/'+id[1]:revision.cover;
+  im.alt='Saved cover photograph';im.loading='lazy';view.append(im)
+ }
+ if(revision.excerpt)view.append(element('p','',revision.excerpt));
+ appendPreviewBlocks(view,revision.body);
+ const bar=element('div','row');
+ const restore=smallButton('Restore this version',()=>restoreHistoryRevision(revision));
+ restore.classList.add('primary');
+ bar.append(restore);
+ node.append(heading,info,view,bar)
+}
+async function restoreHistoryRevision(revision){
+ const d=current();if(!d||!cloudUser||d.cloudId!==historyArticleId)return alert('Reopen the article before restoring a version.');
+ const published=d.status==='published';
+ const question=published
+  ?'Restore version '+revision.version+' as a PRIVATE edit? Any unfinished local edits will be replaced. The published story will remain unchanged until Update Live Article.'
+  :'Restore version '+revision.version+'? Any unsaved local edits will be replaced. Your current cloud version will remain in history.';
+ if(!confirm(question))return;
+ if(!published){
+  save();
+  const ready=await syncDraft(d,false);if(!ready)return alert('Unable to preserve your current draft. Restoration stopped.');
+ }
+ for(const k of ['title','category','excerpt','body','cover'])d[k]=String(revision[k]||'');
+ if(published)d.editingPublished=true;
+ persist();open(d.id);
+ closeHistory();
+ if(!published){
+  save();
+  const saved=await syncDraft(d,false);
+  if(!saved)return alert('Restored version is on this device, but secure saving failed. Please choose Save now.');
+  alert('Version '+revision.version+' restored as a new saved draft. The earlier versions remain available.')
+ }else alert('Version '+revision.version+' restored to your private editor. Preview it, then choose Update Live Article when ready.')
+}
+async function previewHistoryVersion(version,articleId){
+ if(!current()||current().cloudId!==articleId)return;
+ try{const result=await requestApi('/api/articles/'+articleId+'/revisions/'+version);
+  if(current()?.cloudId!==articleId)return;renderRevisionSnapshot(result.revision)
+ }catch(e){$('historyStatus').textContent='Could not open that version: '+e.message}
+}
+async function loadHistoryBatch(append=false){
+ const d=current();if(!d?.cloudId||!cloudUser)return;
+ const articleId=d.cloudId;historyArticleId=articleId;
+ $('historyStatus').textContent='Loading saved versions…';
+ try{
+  const route='/api/articles/'+articleId+'/revisions'+(append&&historyCursor?'?before='+historyCursor:'');
+  const result=await requestApi(route);
+  if(current()?.cloudId!==articleId)return;
+  const root=$('historyItems');if(!append)root.replaceChildren();
+  for(const revision of result.versions||[]){
+   const button=element('button','history-entry');
+   button.type='button';
+   button.append(element('strong','', 'Version '+revision.version+' · '+(revision.status==='published'?'Published':'Draft')));
+   button.append(element('small','',new Date(revision.recorded_at).toLocaleString()+' · '+revision.title));
+   button.onclick=()=>{root.querySelectorAll('button').forEach(b=>b.removeAttribute('aria-current'));button.setAttribute('aria-current','true');previewHistoryVersion(revision.version,articleId)};
+   root.append(button);
+  }
+  historyCursor=result.next_before;
+  $('historyMoreBtn').classList.toggle('hidden',!historyCursor);
+  $('historyStatus').textContent=root.childElementCount+' version'+(root.childElementCount===1?'':'s')+' shown'+(historyCursor?' · Older versions available':'');
+  if(!root.childElementCount)$('historyStatus').textContent='No saved versions yet. Save your story first.'
+ }catch(e){$('historyStatus').textContent='Could not load history: '+e.message}
+}
+async function toggleVersionHistory(){
+ const d=current();if(!d||!cloudUser)return;
+ if(!$('historyPanel').classList.contains('hidden'))return closeHistory();
+ if(d.status!=='published'){
+  save();if(!await syncDraft(d,false))return alert('Save your story securely before opening history.')
+ }else if(d.editingPublished)save();
+ $('historyPanel').classList.remove('hidden');$('historyPreview').classList.add('hidden');historyCursor=null;
+ await loadHistoryBatch()
+}
+$('historyBtn').onclick=toggleVersionHistory;
+$('historyCloseBtn').onclick=closeHistory;
+$('historyMoreBtn').onclick=()=>loadHistoryBatch(true);
 function current(){return drafts.find(x=>x.id===active)}function list(){const author=$('author').value;$('stories').replaceChildren();drafts.filter(x=>x.author===author).sort((a,b)=>String(b.updated).localeCompare(String(a.updated))).forEach(d=>{const b=document.createElement('button');b.className='story'+(d.id===active?' active':'');b.textContent=d.title||'Untitled story';b.onclick=()=>{const old=current();save();if(cloudUser&&old)syncDraft(old,true);open(d.id)};$('stories').append(b)})}function refreshActions(){
  const d=current(),published=d?.status==='published',editing=!!(published&&d.editingPublished);
  $('editPublishedBtn').classList.toggle('hidden',!published||!cloudUser);
@@ -181,11 +290,12 @@ function current(){return drafts.find(x=>x.id===active)}function list(){const au
  $('cloudPublishBtn').textContent=editing?'Update Live Article':'Publish online';
  $('cloudPublishBtn').disabled=!cloudUser||(published&&!editing)||inlineUploads>0;
  $('syncBtn').disabled=!cloudUser||published;
+ $('historyBtn').disabled=!cloudUser||!d?.cloudId;
  $('publishBtn').disabled=published;
  $('photoFile').disabled=published&&!editing;
  $('photoCamera').disabled=published&&!editing;
 }
-function open(key){active=key;const d=current();if(!d)return;
+function open(key){if(active!==key){$('historyPanel').classList.add('hidden');$('historyItems').replaceChildren();$('historyPreview').classList.add('hidden');historyCursor=null;historyArticleId=null}active=key;const d=current();if(!d)return;
  const locked=d.status==='published'&&!d.editingPublished;
  const canShare=d.status==='published'&&!!d.slug;
  $('facebookShareBtn').classList.toggle('hidden',!canShare);$('shareStoryBtn').classList.toggle('hidden',!canShare);
@@ -272,7 +382,7 @@ $('author').onchange=()=>{save();const first=drafts.find(x=>x.author===$('author
   }
   persist();
  }while(resync.has(d.id));
- $('saved').textContent='Saved securely · '+new Date().toLocaleTimeString();
+ $('saved').textContent='Saved securely · '+new Date().toLocaleTimeString();refreshActions();
  return d.cloudId
  })();
  inflight.set(d.id,task);
