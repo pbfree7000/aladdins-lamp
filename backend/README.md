@@ -73,3 +73,20 @@ Authors can open their own published story, select **Edit Published Article**, r
 Server API: `POST /api/articles/:id/revise` requires the authenticated author (or authorized owner), article status `published`, complete validated article data, and `expectedUpdatedAt` optimistic version check. On another-device conflict, it returns HTTP 409 and the editor retains the uncommitted local copy for export; it does not overwrite the other device. Cover image link validation also applies to revisions. `POST /api/articles/:id/photos` accepts securely uploaded new photos for published stories; the public feed serves a photo **only after** that photo is referenced by the committed cover or body. Old photos remain privately stored rather than deleted.
 
 Do not change the live story via ordinary draft `PUT` calls; these intentionally remain restricted to draft records. Reloading a published story while it has unpublished local edits must retain the local working copy for that authenticated account. The public feed continues to expose only committed published data. A full multi-version rollback history is not yet implemented; the author can export a backup before editing.
+
+## Durable version history — deployed 16 Nov 2026
+
+The Writing Desk includes **Version history** for existing cloud-backed articles. Authors can browse all meaningful saved versions, 40 per page with **Show older versions**, preview full text, image layouts and earlier covers, and restore a selected version. Draft restorations save as a new draft revision. For a published article, restoration first opens a private edit and requires **Update Live Article** to change the public story; it retains the original `slug` and `published_at`.
+
+D1 schema: `article_revisions` holds complete field snapshots, keyed by `(article_id,version)`, including status, slug, cover and body. SQLite `AFTER INSERT` and `AFTER UPDATE` triggers capture meaningful article content/state changes **in the same D1 transaction as the save**, ensuring no missing history on autosaves or publication. Identical-field timestamp-only updates are not duplicated. Existing articles were backfilled with one version 1 baseline on deployment. They have no pre-deployment history to recover. Deleted draft articles and their revisions are removed via `ON DELETE CASCADE`; revision history applies while the article remains in the journal.
+
+Migration: `backend/migrations/002_article_revisions.sql` is additive and idempotent. It creates the table/index, backfills the existing published and draft rows, and installs the insert/update triggers. Run each `-- JOURNAL-MIGRATION-STEP` in order on new existing deployments. Fresh installs use `backend/schema.sql`, which also contains the same history schema. Do not remove revision triggers or rewrite older rows. The D1 migration applied to production with **2 pre-existing articles and 2 baseline versions**; the live public storefront was not changed.
+
+Protected endpoints (existing Access JWT + per-article owner checks apply):
+- `GET /api/articles/:id/revisions`: up to 40 newest revision summaries, plus `next_before` pagination cursor
+- `GET /api/articles/:id/revisions?before=N`: 40 older versions
+- `GET /api/articles/:id/revisions/:version`: full historical body, cover and metadata for secure preview
+
+There are deliberately **no PUT/DELETE endpoints for history rows**. Restoration uses the existing, version-checked draft save or published `/revise` API to create another recorded version. Historical photos remain private under the article's authenticated photo-read endpoint even when no longer shown on the public article.
+
+Tests: `python3 backend/tests/test_revision_migration.py` validates SQLite trigger semantics, legacy backfill and idempotence. Backend tests cover history authorization, pagination, snapshot immutability, and restore-as-new-version; Chromium covers list/preview/restore on a published article. The combined GitHub QA run `43877693694` passed before deployment. Real Mike/Rachael-account acceptance on their devices remains recommended.
