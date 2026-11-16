@@ -19,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify SQLite/D1 revision migration and backfill
+        run: python3 backend/tests/test_revision_migration.py
       - name: Run journal backend tests
         run: |
           cd backend
