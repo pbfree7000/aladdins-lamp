@@ -24,5 +24,9 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      # GitHub artifact listings can lag behind a successful upload.
+      # A short registration pause prevents deploy-pages from seeing zero artifacts.
+      - name: Allow Pages artifact registration
+        run: sleep 12
       - id: deployment
         uses: actions/deploy-pages@v4
