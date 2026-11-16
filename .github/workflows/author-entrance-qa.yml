@@ -1,0 +1,30 @@
+name: Branded author entrance QA
+on:
+  push:
+    branches: ['feature/author-entrance-live']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  author-entrance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Test private author entry and public browsing
+        run: node scripts/verify-author-entrance.cjs
+      - name: Preserve responsive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aladdins-author-entry-review
+          path: artifacts/author-login
+          if-no-files-found: warn
+          retention-days: 30
