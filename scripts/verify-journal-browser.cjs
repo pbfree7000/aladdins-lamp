@@ -185,13 +185,12 @@ async function main(){
   // A realistic oversized phone-camera PNG should upload successfully after
   // the editor converts it to a smaller JPEG, without the author resizing it.
   await desk.evaluate(async()=>{
-   const canvas=document.createElement('canvas');canvas.width=1800;canvas.height=1200;
+   const canvas=document.createElement('canvas');canvas.width=2200;canvas.height=1500;
    const ctx=canvas.getContext('2d');const data=ctx.createImageData(canvas.width,canvas.height);
    let state=7291;
    for(let i=0;i<data.data.length;i+=4){
-    state=(Math.imul(state,1664525)+1013904223)>>>0;data.data[i]=state&255;
-    state=(Math.imul(state,1664525)+1013904223)>>>0;data.data[i+1]=state&255;
-    state=(Math.imul(state,1664525)+1013904223)>>>0;data.data[i+2]=state&255;
+    state^=state<<13;state^=state>>>17;state^=state<<5;
+    data.data[i]=state&255;data.data[i+1]=(state>>>8)&255;data.data[i+2]=(state>>>16)&255;
     data.data[i+3]=255;
    }
    ctx.putImageData(data,0,0);
