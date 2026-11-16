@@ -315,7 +315,6 @@ function publishedLink(){const d=current();return d?.status==='published'&&d.slu
   d.editingPublished=false;persist();await connect();return
  }
  d.editingPublished=true;persist();open(d.id);
- $('status').textContent=d.author+' · Editing private copy — original still live';
  $('coverHelp').textContent='Replace the cover using Add a photo from your device, then Preview and Update Live Article.';
 }
 async function updateLiveArticle(d){
