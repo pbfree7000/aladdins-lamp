@@ -51,6 +51,9 @@ test('reject unauthenticated and forged Access tokens',async()=>{
 test('author identity and same-origin writing desk',async()=>{
  const r=await worker.fetch(request('/api/me'),env);
  assert.equal((await r.json()).author,'Mike');
+ const root=await worker.fetch(request('/'),env);
+ assert.equal(root.status,302,'Authenticated API homepage should redirect to the Writing Desk');
+ assert.equal(root.headers.get('location'),'https://journal-api.aladdinslamp.xyz/desk');
  const desk=await worker.fetch(request('/desk'),env);
  assert.equal(desk.status,200);
  assert.match(await desk.text(),/Publish online/);
