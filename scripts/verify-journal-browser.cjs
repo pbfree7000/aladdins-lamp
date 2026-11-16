@@ -124,7 +124,7 @@ async function main(){
   console.log('PASS: journal feed, static fallback, article routes, search and six shop routes');
   const desk=await browser.newPage();
   const editorErrors=[];desk.on('pageerror',e=>editorErrors.push(e.message));
-  const articles=new Map();let n=0;const uploadedPhotoRequests=[];
+  const articles=new Map();let n=0,uploadN=0;const uploadedPhotoRequests=[];
   await desk.route('**/config.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({apiUrl:'https://journal-api.aladdinslamp.xyz'})}));
   await desk.route('https://journal-api.aladdinslamp.xyz/api/**',r=>{
    const u=new URL(r.request().url()),p=u.pathname,method=r.request().method();
@@ -137,12 +137,23 @@ async function main(){
    else if(p.endsWith('/photos')&&method==='POST'){
     uploadedPhotoRequests.push(r.request().postDataBuffer().length);
     const articleId=p.split('/')[3];
-    value={id:photoId,url:'https://journal-feed.aladdinslamp.xyz/media/'+photoId,previewUrl:'/api/articles/'+articleId+'/photos/'+photoId};status=201
+    const nextPhotoId=uploadN++===0?photoId:'aabbccdd-1111-4111-8111-'+String(uploadN).padStart(12,'0');
+    value={id:nextPhotoId,url:'https://journal-feed.aladdinslamp.xyz/media/'+nextPhotoId,previewUrl:'/api/articles/'+articleId+'/photos/'+nextPhotoId};status=201
    }
    else if(p.includes('/photos/')&&method==='GET')return r.fulfill({status:200,contentType:'image/png',headers,body:png});
    else {const id=p.split('/')[3],d=articles.get(id);
     if(!d){status=404;value={error:'Not found'}}
-    else if(p.endsWith('/publish')){d.status='published';value={status:'published',slug:'qa-editor-story'}}
+    else if(p.endsWith('/publish')){d.status='published';d.slug='qa-editor-story';d.published_at=new Date().toISOString();value={status:'published',slug:d.slug}}
+    else if(p.endsWith('/revise')&&method==='POST'){
+     const data=JSON.parse(r.request().postData()||'{}');
+     if(d.status!=='published'){status=409;value={error:'Not published'}}
+     else if(data.expectedUpdatedAt!==d.updated_at){status=409;value={error:'Story changed on another device'}}
+     else{
+      const updated_at=new Date(Date.now()+1000).toISOString();
+      Object.assign(d,{title:data.title,excerpt:data.excerpt,body:data.body,category:data.category,cover:data.cover,updated_at});
+      value={saved:true,status:'published',updated_at,slug:d.slug,published_at:d.published_at}
+     }
+    }
     else if(method==='PUT'){const data=JSON.parse(r.request().postData());Object.assign(d,data,{updated_at:new Date().toISOString()});value={saved:true,updated_at:d.updated_at}}
     else if(method==='DELETE'){articles.delete(id);value={deleted:true}}
    }
@@ -216,6 +227,28 @@ async function main(){
   await desk.locator('#cloudPublishBtn').click();
   await desk.getByText('Rachael · Published').waitFor({timeout:12000});
   assert.equal([...articles.values()][0].status,'published');
+  const original={...([...articles.values()][0])},uploadsBeforeEdit=uploadedPhotoRequests.length;
+  await desk.getByRole('button',{name:'Edit Published Article'}).click();
+  await desk.getByText('Editing a private copy',{exact:false}).waitFor({timeout:12000});
+  assert.equal(await desk.locator('#cover').isDisabled(),false,'Published article cover must become editable');
+  await desk.locator('.story-part-text').first().fill('Corrected ginger article, with a different photograph.');
+  await desk.locator('#photoFile').setInputFiles({name:'replacement.png',mimeType:'image/png',buffer:png});
+  await desk.getByText('Photo added! Select Preview',{exact:false}).waitFor({timeout:12000});
+  assert.equal(uploadedPhotoRequests.length,uploadsBeforeEdit+1,'Replacing published photo must upload new media');
+  assert.equal(articles.get(original.id).cover,original.cover,'Uploading replacement must not change live cover');
+  assert.equal(articles.get(original.id).body,original.body,'Private edit must not change live story');
+  await desk.waitForTimeout(1100);
+  await desk.reload({waitUntil:'domcontentloaded'});
+  await desk.getByText('Editing a private copy',{exact:false}).waitFor({timeout:12000});
+  assert.equal(await desk.locator('.story-part-text').first().inputValue(),'Corrected ginger article, with a different photograph.','Unpublished edits must survive a reload');
+  await desk.locator('#previewBtn').click();
+  await desk.locator('#cloudPublishBtn').click();
+  await desk.getByText('Rachael · Published').waitFor({timeout:12000});
+  const revised=articles.get(original.id);
+  assert.equal(revised.slug,original.slug,'Published article URL must remain unchanged');
+  assert.equal(revised.published_at,original.published_at,'Publication date remains unchanged');
+  assert.notEqual(revised.cover,original.cover,'Live cover must change only after explicit update');
+  assert.ok(revised.body.includes('Corrected ginger article'),'Published text should update after confirmation');
   assert.equal(await desk.locator('header a').getAttribute('href'),'https://aladdinslamp.xyz/#journal','Public Journal link should lead to the storefront');
   await desk.locator('#new').click();
   await desk.locator('#title').fill('Signout save test');
