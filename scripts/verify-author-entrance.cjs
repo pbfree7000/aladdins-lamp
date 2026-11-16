@@ -41,8 +41,12 @@ const server=http.createServer((req,res)=>{
    await page.goto(base+'#journal/collection/mike',{waitUntil:'domcontentloaded'});
    await page.locator('.journal-author-entry a').waitFor({timeout:15000});
    await page.goto(base+'#journal',{waitUntil:'domcontentloaded'});
-   await page.locator('#menuToggle').click();
-   await page.locator('#menu a[href="/journal/author.html"]').waitFor({timeout:4000});
+   if(width<1280){
+    await page.locator('#menuToggle').click();
+    await page.locator('#menu a[href="/journal/author.html"]').waitFor({timeout:4000});
+   } else {
+    assert.equal(await page.locator('.journal-author-entry a').getAttribute('href'),'/journal/author.html');
+   }
    assert.deepEqual(errors,[],'No JS errors at '+width);
    checks.push({width,result:'PASS'});console.log('PASS author sign-in entrance '+width+'px');
    await page.close();
