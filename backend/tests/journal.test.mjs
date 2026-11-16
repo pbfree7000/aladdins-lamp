@@ -60,21 +60,22 @@ test('author identity and same-origin writing desk',async()=>{
  assert.equal(options.status,204);
 });
 test('author same-origin saving and photo upload work, foreign origins remain blocked',async()=>{
+ const envLocal={...env,DB:new FakeD1(),JOURNAL_PHOTOS:{put:async()=>{},get:async()=>null}};
  for(const origin of ['https://journal-api.aladdinslamp.xyz','https://aladdinslamp.xyz']){
-  const created=await worker.fetch(request('/api/articles','POST','mike@example.com',{...article,title:'Origin check '+origin},origin),env);
+  const created=await worker.fetch(request('/api/articles','POST','mike@example.com',{...article,title:'Origin check '+origin},origin),envLocal);
   assert.equal(created.status,201,'Author should create a draft from '+origin);
   const d=await created.json();
   assert.equal(created.headers.get('access-control-allow-origin'),origin);
-  const revised=await worker.fetch(request('/api/articles/'+d.id,'PUT','mike@example.com',{...article,title:'Edited from '+origin,expectedUpdatedAt:d.updated_at},origin),env);
+  const revised=await worker.fetch(request('/api/articles/'+d.id,'PUT','mike@example.com',{...article,title:'Edited from '+origin,expectedUpdatedAt:d.updated_at},origin),envLocal);
   assert.equal(revised.status,200,'Author should save the existing draft from '+origin);
   const body=new FormData();
   body.append('photo',new Blob([Uint8Array.from([137,80,78,71,13,10,26,10,...Array(24).fill(0)])],{type:'image/png'}),'test.png');
-  const upload=await worker.fetch(new Request('https://journal-api.aladdinslamp.xyz/api/articles/'+d.id+'/photos',{method:'POST',headers:{'Origin':origin,'Cf-Access-Jwt-Assertion':jwt('mike@example.com')},body}),env);
+  const upload=await worker.fetch(new Request('https://journal-api.aladdinslamp.xyz/api/articles/'+d.id+'/photos',{method:'POST',headers:{'Origin':origin,'Cf-Access-Jwt-Assertion':jwt('mike@example.com')},body}),envLocal);
   assert.equal(upload.status,201,'Author should upload a photo from '+origin);
  }
- const foreign=await worker.fetch(request('/api/articles','POST','mike@example.com',article,'https://unauthorized.example'),env);
+ const foreign=await worker.fetch(request('/api/articles','POST','mike@example.com',article,'https://unauthorized.example'),envLocal);
  assert.equal(foreign.status,403,'Foreign origins must not create drafts');
- const foreignPhoto=await worker.fetch(new Request('https://journal-api.aladdinslamp.xyz/api/articles',{method:'OPTIONS',headers:{Origin:'https://unauthorized.example'}}),env);
+ const foreignPhoto=await worker.fetch(new Request('https://journal-api.aladdinslamp.xyz/api/articles',{method:'OPTIONS',headers:{Origin:'https://unauthorized.example'}}),envLocal);
  assert.equal(foreignPhoto.status,403,'Foreign origins must not pass CORS preflight');
 });
 test('create, retrieve and revise privately with cross-author protection',async()=>{
