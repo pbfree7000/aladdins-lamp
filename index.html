@@ -432,6 +432,13 @@ function journalStoryArticle(post){
 }
 function linkJournalCards(visible){return visible.length?'<div class="journal-post-grid">'+visible.map(journalCard).join('')+'</div>':'<div class="journal-empty">The first notes for this collection are being prepared. Discover the rest of the Treasure Journal in the meantime.</div>'}
 let journalLoadId=0;
+// Open Journal stories and collections at their content, not the page hero.
+function revealJournalDestination(){
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  if((location.hash.slice(1).split('/')[0]||'home')!=='journal'||journal.hidden)return;
+  window.scrollTo({top:Math.max(0,window.scrollY+journal.getBoundingClientRect().top-88),left:0,behavior:'instant'});
+ }));
+}
 async function loadJournal(journalRoute=''){
  const token=++journalLoadId;
  journal.hidden=false;
@@ -443,13 +450,13 @@ async function loadJournal(journalRoute=''){
  const story=parts[0]&&parts[0]!=='collection'?posts.find(p=>slugify(p)===parts[0]):null;
  if(story){
   journal.innerHTML='<span class="journal-kicker">FROM THE TREASURE KEEPERS</span>'+journalStoryArticle(story);
-  bindJournalShare(posts);return
+  bindJournalShare(posts);revealJournalDestination();return
  }
  if(parts[0]&&parts[0]!=='collection'){
-  journal.innerHTML='<a class="journal-return" href="#journal">← The Treasure Journal</a><div class="journal-empty">This story could not be found. Explore the other stories in the Journal.</div>';return
+  journal.innerHTML='<a class="journal-return" href="#journal">← The Treasure Journal</a><div class="journal-empty">This story could not be found. Explore the other stories in the Journal.</div>';revealJournalDestination();return
  }
  if(parts[0]==='collection'&&!room){
-  journal.innerHTML='<a class="journal-return" href="#journal">← The Treasure Journal</a><div class="journal-empty">This collection could not be found.</div>';return
+  journal.innerHTML='<a class="journal-return" href="#journal">← The Treasure Journal</a><div class="journal-empty">This collection could not be found.</div>';revealJournalDestination();return
  }
  const intro=room?'<a class="journal-return" href="#journal">← All journal stories</a><span class="journal-kicker">'+esc(room.eyebrow)+'</span><h2 class="journal-heading">'+esc(room.title)+'</h2><p class="journal-lede">'+esc(room.description)+'</p>':
  '<span class="journal-kicker">ALADDIN’S LAMP · STORIES & DISCOVERIES</span><h2 class="journal-heading">The Treasure Journal</h2><p class="journal-lede">Collected thoughts, extraordinary finds and the curious little histories that live inside an old shop.</p><div class="journal-rooms">'+Object.values(JOURNAL_ROOMS).map(journalRoomCard).join('')+'</div>';
@@ -457,7 +464,8 @@ async function loadJournal(journalRoute=''){
  const shown=room?posts.filter(p=>belongsToJournalRoom(p,room.key)):posts;
  const title=room?'From the notebook':'Latest dispatches';
  const extra=room?'<p class="journal-lede"><a class="journal-return" href="#journal">Explore every story in the Treasure Journal →</a></p>':'';
- journal.innerHTML=intro+authorEntry+'<hr class="journal-rule"><h3 class="journal-collection-title">'+title+'</h3>'+linkJournalCards(shown)+extra
+ journal.innerHTML=intro+authorEntry+'<hr class="journal-rule"><h3 class="journal-collection-title">'+title+'</h3>'+linkJournalCards(shown)+extra;
+ revealJournalDestination();
 }
 function bindJournalShare(posts){
  journal.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{
