@@ -194,7 +194,7 @@ test('image-only rich layout is not a publishable story',async()=>{
 test('public feed includes only published fields and no draft ownership',async()=>{
  const a=await publicFeed.fetch(new Request('https://journal-feed.aladdinslamp.xyz/api/articles'),{DB});
  assert.equal(a.status,200);const payload=await a.json();
- assert.equal(payload.posts.length,3);
+ assert.equal(payload.posts.length,[...DB.rows.values()].filter(row=>row.status==='published').length);
  assert.equal(payload.posts[0].status,'published');
  assert.ok(!JSON.stringify(payload).includes('owner_email'));
  assert.equal((await publicFeed.fetch(new Request('https://journal-feed.aladdinslamp.xyz/api/articles',{method:'POST'}),{DB})).status,405);
