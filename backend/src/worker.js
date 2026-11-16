@@ -3,7 +3,8 @@
 // Writing Desk HTML is served from private, Worker-bound KV; it is never a public KV endpoint.
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}});
 const bytes=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
-function cors(request,env){const origin=request.headers.get('Origin');return origin===env.ALLOWED_ORIGIN?{'access-control-allow-origin':origin,'access-control-allow-headers':'authorization, content-type','access-control-allow-methods':'GET, POST, PUT, DELETE, OPTIONS','access-control-allow-credentials':'true','vary':'Origin'}:{}}
+function permittedOrigin(request,env){const origin=request.headers.get('Origin');return !origin||origin===new URL(request.url).origin||origin===env.ALLOWED_ORIGIN}
+function cors(request,env){const origin=request.headers.get('Origin');return origin&&permittedOrigin(request,env)?{'access-control-allow-origin':origin,'access-control-allow-headers':'authorization, content-type','access-control-allow-methods':'GET, POST, PUT, DELETE, OPTIONS','access-control-allow-credentials':'true','vary':'Origin'}:{}}
 async function identity(request,env){
  const token=request.headers.get('Cf-Access-Jwt-Assertion')||request.headers.get('Authorization')?.replace(/^Bearer\s+/i,'');
  if(!token)throw Error('Missing authentication');
@@ -53,8 +54,10 @@ async function publishToDatabase(env,story,user,expectedUpdatedAt){
  return {status:'published',slug};
 }
 export default {async fetch(request,env){
- const corsHeaders=cors(request,env);const origin=request.headers.get('Origin');
- if(origin&&origin!==env.ALLOWED_ORIGIN)return json({error:'Origin not allowed'},403);
+ const corsHeaders=cors(request,env);
+ // Allow the protected Writing Desk to save/upload from this Worker's own origin.
+ // The public storefront remains the only separately authorized cross-origin caller.
+ if(!permittedOrigin(request,env))return json({error:'Origin not allowed'},403);
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:corsHeaders});
  let user;try{user=await identity(request,env)}catch(e){return json({error:'Unauthorized'},401,corsHeaders)}
  if(!env.DB)return json({error:'Database not configured'},503,corsHeaders);
