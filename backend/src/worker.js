@@ -105,6 +105,30 @@ export default {async fetch(request,env){
   }
   return json({error:'Not found'},404,corsHeaders);
  }
+
+ // Private journal version history. Access JWT + article ownership are checked before ANY revision lookup.
+ const historyMatch=path.match(/^\/api\/articles\/([a-f0-9-]{36})\/revisions(?:\/([1-9][0-9]{0,8}))?$/);
+ if(historyMatch){
+  if(request.method!=='GET')return json({error:'Not found'},404,corsHeaders);
+  const articleId=historyMatch[1];
+  const article=user.role==='owner'
+   ?await env.DB.prepare('SELECT * FROM articles WHERE id=?').bind(articleId).first()
+   :await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(articleId,user.email).first();
+  if(!article)return json({error:'Not found'},404,corsHeaders);
+  if(historyMatch[2]){
+   const version=Number(historyMatch[2]);
+   const revision=await env.DB.prepare('SELECT article_id,version,title,category,excerpt,body,cover,status,slug,published_at,source_updated_at,recorded_at FROM article_revisions WHERE article_id=? AND version=?').bind(articleId,version).first();
+   if(!revision)return json({error:'Version not found'},404,corsHeaders);
+   return json({revision},200,corsHeaders)
+  }
+  const rawCursor=new URL(request.url).searchParams.get('before');
+  if(rawCursor!==null&&!/^[1-9][0-9]{0,8}$/.test(rawCursor))return json({error:'Invalid history cursor'},422,corsHeaders);
+  const before=rawCursor===null?2147483647:Number(rawCursor);
+  const items=(await env.DB.prepare('SELECT version,title,status,slug,source_updated_at,recorded_at FROM article_revisions WHERE article_id=? AND version<? ORDER BY version DESC LIMIT 41').bind(articleId,before).all()).results||[];
+  const more=items.length>40;
+  const versions=items.slice(0,40);
+  return json({article_id:articleId,author:article.author,versions,next_before:more?versions.at(-1).version:null},200,corsHeaders)
+ }
  const match=path.match(/^\/api\/articles\/([a-f0-9-]{36})(\/publish|\/revise)?$/);
  if(match){const id=match[1];const story=user.role==='owner'?await env.DB.prepare('SELECT * FROM articles WHERE id=?').bind(id).first():await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).first();if(!story)return json({error:'Not found'},404,corsHeaders);
   if(match[2]==='/publish'&&request.method==='POST'){
