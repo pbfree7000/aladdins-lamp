@@ -87,7 +87,7 @@ export default {async fetch(request,env){
    return new Response(object.body,{headers:{'content-type':photo.content_type,'cache-control':'private, no-store','x-content-type-options':'nosniff','content-disposition':'inline'}});
   }
   if(request.method==='POST'&&!photoMatch[2]){
-   if(story.status!=='draft')return json({error:'Only drafts accept new photographs'},409,corsHeaders);
+   if(!['draft','published'].includes(story.status))return json({error:'Story cannot accept photographs'},409,corsHeaders);
    if(!env.JOURNAL_PHOTOS)return json({error:'Journal photo storage unavailable'},503,corsHeaders);
    const limit=5*1024*1024;
    const size=Number(request.headers.get('content-length')||0);
@@ -105,9 +105,9 @@ export default {async fetch(request,env){
   }
   return json({error:'Not found'},404,corsHeaders);
  }
- const match=path.match(/^\/api\/articles\/([a-f0-9-]{36})(\/publish)?$/);
+ const match=path.match(/^\/api\/articles\/([a-f0-9-]{36})(\/publish|\/revise)?$/);
  if(match){const id=match[1];const story=user.role==='owner'?await env.DB.prepare('SELECT * FROM articles WHERE id=?').bind(id).first():await env.DB.prepare('SELECT * FROM articles WHERE id=? AND owner_email=?').bind(id,user.email).first();if(!story)return json({error:'Not found'},404,corsHeaders);
-  if(match[2]&&request.method==='POST'){
+  if(match[2]==='/publish'&&request.method==='POST'){
    const publishInput=await request.json().catch(()=>null);
    if(!publishInput||typeof publishInput.expectedUpdatedAt!=='string'||!publishInput.expectedUpdatedAt)return json({error:'Reload story before publishing'},428,corsHeaders);
    if(story.updated_at!==publishInput.expectedUpdatedAt)return json({error:'Story changed on another device. Reload before publishing.'},409,corsHeaders);
@@ -116,6 +116,20 @@ export default {async fetch(request,env){
    const result=await publishToDatabase(env,story,user,publishInput.expectedUpdatedAt);
    if(!result)return json({error:'Story changed while publishing. Reload before publishing.'},409,corsHeaders);
    return json(result,200,corsHeaders)}
+  if(match[2]==='/revise'&&request.method==='POST'){
+   // Published records stay visible until the author explicitly submits a replacement.
+   // Keep the original slug and publication date so every existing shared URL remains valid.
+   if(story.status!=='published')return json({error:'Only published stories can be updated here'},409,corsHeaders);
+   const input=await request.json().catch(()=>null);
+   if(!input||typeof input.expectedUpdatedAt!=='string'||!input.expectedUpdatedAt)return json({error:'Reload story before updating the published version'},428,corsHeaders);
+   if(story.updated_at!==input.expectedUpdatedAt)return json({error:'Published story changed on another device. Export your changes before refreshing.'},409,corsHeaders);
+   const d=validate(input);
+   if(!d.title||!d.excerpt||!hasReadableStoryBody(d.body))return json({error:'Title, introduction and story text are required'},422,corsHeaders);
+   const now=new Date().toISOString();
+   const result=await env.DB.prepare("UPDATE articles SET title=?,category=?,excerpt=?,body=?,cover=?,updated_at=? WHERE id=? AND owner_email=? AND status=? AND updated_at=?").bind(d.title,d.category,d.excerpt,d.body,d.cover,now,id,story.owner_email,'published',input.expectedUpdatedAt).run();
+   if(result.meta?.changes!==1)return json({error:'Published story changed on another device. Export your edits before refreshing.'},409,corsHeaders);
+   return json({saved:true,status:'published',updated_at:now,slug:story.slug,published_at:story.published_at},200,corsHeaders)
+  }
   if(!match[2]&&request.method==='PUT'){
     if(story.status==='published')return json({error:'Published stories are read-only'},409,corsHeaders);
     const input=await request.json(),expected=input.expectedUpdatedAt;
