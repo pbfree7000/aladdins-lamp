@@ -21,7 +21,7 @@ class FakeD1{
  constructor(){this.rows=new Map();this.photos=new Map()}
  prepare(sql){
   const prepared={bind:(...p)=>({
-   first:async()=>{if(sql.includes('FROM journal_photos WHERE id=?')){const ph=this.photos.get(p[0]);return ph?.article_id===p[1]?{...ph}:null}if(sql.includes('SELECT p.object_key,p.content_type')){const ph=this.photos.get(p[0]);return ph&&this.rows.get(ph.article_id)?.status==='published'?{...ph}:null}if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d&&(p.length===1||d.owner_email===p[1])?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
+   first:async()=>{if(sql.includes('FROM journal_photos WHERE id=?')){const ph=this.photos.get(p[0]);return ph?.article_id===p[1]?{...ph}:null}if(sql.includes('SELECT p.object_key,p.content_type')){const ph=this.photos.get(p[0]);return ph&&this.rows.get(ph.article_id)?.status==='published'?{...ph,cover:this.rows.get(ph.article_id).cover,body:this.rows.get(ph.article_id).body}:null}if(sql.includes('FROM articles WHERE id=?')){const d=this.rows.get(p[0]);return d&&(p.length===1||d.owner_email===p[1])?{...d}:null}throw Error('Unsupported first SQL: '+sql)},
    all:async()=>{if(sql.includes('owner_email=?'))return {results:[...this.rows.values()].filter(d=>d.owner_email===p[0]).map(d=>({...d}))};if(sql.includes('SELECT * FROM articles ORDER BY'))return {results:[...this.rows.values()].map(d=>({...d}))};if(sql.includes("status='published'"))return {results:[...this.rows.values()].filter(d=>d.status==='published').map(d=>({...d,date:d.published_at}))};throw Error('Unsupported all SQL: '+sql)},
    run:async()=>{let changes=0;
     if(sql.startsWith('INSERT INTO journal_photos')){const [id,article_id,owner_email,object_key,content_type,created_at]=p;this.photos.set(id,{id,article_id,owner_email,object_key,content_type,created_at});changes=1}
@@ -138,8 +138,17 @@ test('photos stay private until publication and reject unauthorized access and s
  assert.equal((await worker.fetch(request(photo.previewUrl),env)).status,200);
  const pub=await worker.fetch(request('/api/articles/'+draft.id+'/publish','POST','mike@example.com',{expectedUpdatedAt:draft.updated_at}),env);
  assert.equal(pub.status,200);
- const live=await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS});
- assert.equal(live.status,200);assert.equal(live.headers.get('content-type'),'image/png');
+ const unused=await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS});
+ assert.equal(unused.status,404,'Unreferenced uploaded photo must stay private even when its article is published');
+ const published=DB.rows.get(draft.id);
+ published.cover=photo.url;
+ const coverLive=await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS});
+ assert.equal(coverLive.status,200);assert.equal(coverLive.headers.get('content-type'),'image/png');
+ published.cover='';
+ published.body='ALADDIN_BLOCKS_V1:'+JSON.stringify([{kind:'text',style:'paragraph',text:'Story'},{kind:'image',id:photo.id,size:'medium',align:'center',caption:''}]);
+ assert.equal((await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS})).status,200,'Image explicitly placed in article must be public');
+ published.body=article.body;
+ assert.equal((await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS})).status,404,'Removing photo from story must make it private again');
 });
 test('image-only rich layout is not a publishable story',async()=>{
  const imageOnly={...article,body:'ALADDIN_BLOCKS_V1:'+JSON.stringify([{kind:'image',id:'aabbccdd-1111-4111-8111-000000000001',caption:'Photo',size:'medium',align:'center'}])};
