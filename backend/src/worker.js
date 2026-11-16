@@ -63,6 +63,9 @@ export default {async fetch(request,env){
  if(!env.DB)return json({error:'Database not configured'},503,corsHeaders);
  const url=new URL(request.url),path=url.pathname.replace(/\/$/,'');
  try{
+ // Recovery entry: the Access email login on some browsers returns to the app root.
+ // Keep authentication enforced, then bring a signed-in author directly to /desk.
+ if(path===''&&request.method==='GET')return Response.redirect(new URL('/desk',url).toString(),302);
  if(path==='/desk'&&request.method==='GET'){const editorHtml=await env.EDITOR_ASSETS?.get('desk-v1');return new Response(editorHtml||'The editor assets have not been uploaded',{status:editorHtml?200:503,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY','content-security-policy':"default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'"}})}
  if(path==='/config.json'&&request.method==='GET')return json({apiUrl:new URL(request.url).origin},200,corsHeaders);
  if(path==='/api/me'&&request.method==='GET')return json({...user,publishEnabled:true},200,corsHeaders);
