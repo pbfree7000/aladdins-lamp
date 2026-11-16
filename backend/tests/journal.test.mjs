@@ -150,6 +150,38 @@ test('photos stay private until publication and reject unauthorized access and s
  published.body=article.body;
  assert.equal((await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS})).status,404,'Removing photo from story must make it private again');
 });
+test('authors can replace photos and revise published stories without changing the URL or exposing staged images',async()=>{
+ const created=await (await worker.fetch(request('/api/articles','POST','rachael@example.com',article),env)).json();
+ const id=created.id;
+ const published=await worker.fetch(request('/api/articles/'+id+'/publish','POST','rachael@example.com',{expectedUpdatedAt:created.updated_at}),env);
+ assert.equal(published.status,200);
+ const before={...DB.rows.get(id)};
+ const png=Uint8Array.from([137,80,78,71,13,10,26,10,...Array(24).fill(0)]);
+ const form=new FormData();form.append('photo',new Blob([png],{type:'image/png'}),'replacement.png');
+ const upload=await worker.fetch(new Request('https://journal-api.aladdinslamp.xyz/api/articles/'+id+'/photos',{method:'POST',headers:{'Cf-Access-Jwt-Assertion':jwt('rachael@example.com')},body:form}),env);
+ assert.equal(upload.status,201,'Published article should accept staged photo upload');
+ const photo=await upload.json();
+ assert.equal((await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS})).status,404,'Unreferenced replacement stays private');
+ const update={...article,title:'Corrected ginger article',cover:photo.url,expectedUpdatedAt:before.updated_at};
+ const unauthorized=await worker.fetch(request('/api/articles/'+id+'/revise','POST','mike@example.com',update),env);
+ assert.equal(unauthorized.status,404,'Other author cannot edit published article');
+ const missingVersion=await worker.fetch(request('/api/articles/'+id+'/revise','POST','rachael@example.com',{...update,expectedUpdatedAt:''}),env);
+ assert.equal(missingVersion.status,428,'Update needs version token');
+ const invalid=await worker.fetch(request('/api/articles/'+id+'/revise','POST','rachael@example.com',{...update,body:'ALADDIN_BLOCKS_V1:invalid'}),env);
+ assert.equal(invalid.status,422);
+ assert.equal(DB.rows.get(id).cover,before.cover,'Failed updates do not modify the live article');
+ const live=await worker.fetch(request('/api/articles/'+id+'/revise','POST','rachael@example.com',update),env);
+ assert.equal(live.status,200);
+ const result=await live.json();
+ assert.equal(result.slug,before.slug,'Public URL remains identical');
+ assert.equal(result.published_at,before.published_at,'Original publication date remains identical');
+ const stored=DB.rows.get(id);
+ assert.equal(stored.status,'published');assert.equal(stored.slug,before.slug);
+ assert.equal(stored.cover,photo.url);assert.equal(stored.title,'Corrected ginger article');
+ assert.equal((await publicFeed.fetch(new Request(photo.url),{DB,JOURNAL_PHOTOS})).status,200,'Only committed replacement becomes public');
+ const stale=await worker.fetch(request('/api/articles/'+id+'/revise','POST','rachael@example.com',update),env);
+ assert.equal(stale.status,409,'A stale device cannot overwrite a newer published article');
+});
 test('image-only rich layout is not a publishable story',async()=>{
  const imageOnly={...article,body:'ALADDIN_BLOCKS_V1:'+JSON.stringify([{kind:'image',id:'aabbccdd-1111-4111-8111-000000000001',caption:'Photo',size:'medium',align:'center'}])};
  const created=await (await worker.fetch(request('/api/articles','POST','mike@example.com',imageOnly),env)).json();
