@@ -124,7 +124,7 @@ async function main(){
   console.log('PASS: journal feed, static fallback, article routes, search and six shop routes');
   const desk=await browser.newPage();
   const editorErrors=[];desk.on('pageerror',e=>editorErrors.push(e.message));
-  const articles=new Map();let n=0;
+  const articles=new Map();let n=0;const uploadedPhotoRequests=[];
   await desk.route('**/config.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({apiUrl:'https://journal-api.aladdinslamp.xyz'})}));
   await desk.route('https://journal-api.aladdinslamp.xyz/api/**',r=>{
    const u=new URL(r.request().url()),p=u.pathname,method=r.request().method();
@@ -135,6 +135,7 @@ async function main(){
    else if(p==='/api/articles'&&method==='GET')value={articles:[...articles.values()]};
    else if(p==='/api/articles'&&method==='POST'){const data=JSON.parse(r.request().postData());const id='11111111-1111-4111-8111-'+String(++n).padStart(12,'0'),updated_at=new Date().toISOString();articles.set(id,{id,...data,author:'Rachael',owner_email:'rachael@example.com',updated_at,status:'draft'});value={id,author:'Rachael',updated_at,status:'draft'};status=201}
    else if(p.endsWith('/photos')&&method==='POST'){
+    uploadedPhotoRequests.push(r.request().postDataBuffer().length);
     const articleId=p.split('/')[3];
     value={id:photoId,url:'https://journal-feed.aladdinslamp.xyz/media/'+photoId,previewUrl:'/api/articles/'+articleId+'/photos/'+photoId};status=201
    }
@@ -181,6 +182,28 @@ async function main(){
   }
   assert.ok(serialized.startsWith('ALADDIN_BLOCKS_V1:'),'Editor should persist structured body');
   assert.ok(blocks.some(b=>b.kind==='image'&&b.id===photoId&&b.align==='right'&&b.size==='small'),'Inline photo layout must survive autosave: '+JSON.stringify(blocks));
+  // A realistic oversized phone-camera PNG should upload successfully after
+  // the editor converts it to a smaller JPEG, without the author resizing it.
+  await desk.evaluate(async()=>{
+   const canvas=document.createElement('canvas');canvas.width=1800;canvas.height=1200;
+   const ctx=canvas.getContext('2d');const data=ctx.createImageData(canvas.width,canvas.height);
+   let state=7291;
+   for(let i=0;i<data.data.length;i+=4){
+    state=(Math.imul(state,1664525)+1013904223)>>>0;data.data[i]=state&255;
+    state=(Math.imul(state,1664525)+1013904223)>>>0;data.data[i+1]=state&255;
+    state=(Math.imul(state,1664525)+1013904223)>>>0;data.data[i+2]=state&255;
+    data.data[i+3]=255;
+   }
+   ctx.putImageData(data,0,0);
+   const large=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   if(!large||large.size<5*1024*1024)throw Error('Fixture must exceed 5 MB');
+   const transfer=new DataTransfer();transfer.items.add(new File([large],'large-phone.png',{type:'image/png'}));
+   const input=document.getElementById('photoFile');input.files=transfer.files;
+   input.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  await desk.getByText('Photo added! Select Preview',{exact:false}).waitFor({timeout:20000});
+  assert.ok(uploadedPhotoRequests.length>=3,'Mock API should receive both inline photos and a resized cover');
+  assert.ok(uploadedPhotoRequests.at(-1)<5*1024*1024+32768,'Optimized photo must fit the actual server upload cap');
   await desk.locator('#previewBtn').click();
   await desk.locator('#preview h1').getByText('QA editor story').waitFor({timeout:12000});
   await desk.locator('#cloudPublishBtn').click();
