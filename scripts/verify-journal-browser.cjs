@@ -154,6 +154,14 @@ async function main(){
   await desk.locator('#title').fill('QA editor story');
   await desk.locator('#excerpt').fill('An introduction.');
   await desk.locator('.story-part-text').first().fill('An illustrative story.');
+  await desk.locator('#cover').fill('https://www.shutterstock.com/image-vector/watercolor-vector-ginger-root-isolated-on-2695439951');
+  await desk.locator('#cover').blur();
+  await desk.getByText('That is a Shutterstock listing page',{exact:false}).waitFor({timeout:12000});
+  await desk.locator('#cloudPublishBtn').click();
+  await desk.getByText('That is a Shutterstock listing page',{exact:false}).waitFor({timeout:12000});
+  assert.equal([...articles.values()].some(x=>x.status==='published'),false,'Stock-photo webpage URL must not publish as image');
+  await desk.locator('#cover').fill('');
+
   await desk.locator('#inlinePhotoFile').setInputFiles({name:'treasure.png',mimeType:'image/png',buffer:png});
   await desk.locator('.story-photo').waitFor({timeout:12000});
   await desk.locator('.story-photo select[aria-label="Photo position"]').selectOption('right');
