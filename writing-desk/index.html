@@ -29,7 +29,7 @@
 </style></head><body><header><strong>✦ The Treasure Journal <span class="muted">Writing Desk</span></strong><div class="desk-header-actions"><a href="https://aladdinslamp.xyz/#journal">View public journal</a><button type="button" id="signOutBtn" aria-label="Sign Out of the Writing Desk">Sign Out</button></div></header>
 <main><aside><h2>YOUR NOTEBOOK</h2><label for="author">Writing as</label><select id="author"><option>Rachael</option><option>Mike</option></select><div class="toolbar"><button id="new">+ New story</button></div><div id="stories"></div><p class="muted">Drafts are saved to the secure account automatically after connection. Backups remain available.</p><button id="importBtn" class="ghost">Import draft or backup</button><button id="backupBtn" class="ghost" style="margin-top:8px">Back up all stories</button><input id="importFile" type="file" accept="application/json" class="hidden"></aside>
 <section class="paper"><div class="row space"><span id="status" class="muted">Private draft</span><div class="row"><button id="writeBtn">Write</button><button id="previewBtn">Preview</button><button id="exportBtn">Export draft</button><button id="publishBtn" class="primary">Prepare for publishing</button></div></div>
-<div id="write"><label for="title">Story title</label><input id="title" class="title" placeholder="Give your story a title…"><div class="row"><div style="flex:1;min-width:180px"><label for="category">Category</label><select id="category"><option>Behind the Counter</option><option>Fresh Finds</option><option>Field Notes</option><option>The Silver Vault</option><option>Rachael’s Apothecary</option><option>Treasure Hunt</option><option>Collecting Guides</option></select></div><div style="flex:1;min-width:180px"><label for="cover">Cover photo (optional)</label><input id="cover" placeholder="Paste an HTTPS image link, or choose a photo below"><label for="photoFile">Add a photo from your device</label><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><label for="photoCamera">Or take a new photo with your phone</label><input id="photoCamera" type="file" accept="image/*" capture="environment"><span id="photoStatus" class="muted">Choose, take, drop or paste a cover photo (up to 5 MB).</span></div></div><label for="excerpt">Short introduction</label><textarea id="excerpt" style="min-height:85px" placeholder="One or two sentences to introduce the story…"></textarea><label for="storyCanvas">Your story</label><p class="story-help">Write naturally. Paste a photo where the cursor is, or use Add photo. Drag pictures to move them, or use the arrow buttons.</p><div class="toolbar"><button data-insert="heading">Heading</button><button data-insert="quote">Quote</button><button data-insert="bullet">List</button><button data-insert="link">Link</button><button id="addStoryPhoto" type="button">+ Add photo in story</button><button id="addStoryText" type="button">+ Add paragraph</button></div><input id="inlinePhotoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden"><div id="storyCanvas" class="story-canvas" role="region" aria-label="Visual story editor"></div><p id="inlinePhotoStatus" class="muted" role="status">Pictures can appear between any two paragraphs. Click a paragraph before adding a picture to choose its position.</p><textarea id="body" class="hidden" aria-hidden="true" tabindex="-1"></textarea></div>
+<div id="write"><label for="title">Story title</label><input id="title" class="title" placeholder="Give your story a title…"><div class="row"><div style="flex:1;min-width:180px"><label for="category">Category</label><select id="category"><option>Behind the Counter</option><option>Fresh Finds</option><option>Field Notes</option><option>The Silver Vault</option><option>Rachael’s Apothecary</option><option>Treasure Hunt</option><option>Collecting Guides</option></select></div><div style="flex:1;min-width:180px"><label for="cover">Cover photo (optional)</label><input id="cover" placeholder="Paste an HTTPS image link, or choose a photo below"><label for="photoFile">Add a photo from your device</label><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><label for="photoCamera">Or take a new photo with your phone</label><input id="photoCamera" type="file" accept="image/*" capture="environment"><span id="photoStatus" class="muted">Choose, take, drop or paste a cover photo. Large photos are resized automatically.</span></div></div><label for="excerpt">Short introduction</label><textarea id="excerpt" style="min-height:85px" placeholder="One or two sentences to introduce the story…"></textarea><label for="storyCanvas">Your story</label><p class="story-help">Write naturally. Paste a photo where the cursor is, or use Add photo. Drag pictures to move them, or use the arrow buttons.</p><div class="toolbar"><button data-insert="heading">Heading</button><button data-insert="quote">Quote</button><button data-insert="bullet">List</button><button data-insert="link">Link</button><button id="addStoryPhoto" type="button">+ Add photo in story</button><button id="addStoryText" type="button">+ Add paragraph</button></div><input id="inlinePhotoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden"><div id="storyCanvas" class="story-canvas" role="region" aria-label="Visual story editor"></div><p id="inlinePhotoStatus" class="muted" role="status">Pictures can appear between any two paragraphs. Click a paragraph before adding a picture to choose its position.</p><textarea id="body" class="hidden" aria-hidden="true" tabindex="-1"></textarea></div>
 <div id="preview" class="hidden preview" aria-live="polite"></div><div class="notice"><strong id="connectionState">Local-only writing desk.</strong> <span id="connectionHelp">No shared account connected. Drafts remain on this device. Export a backup regularly.</span></div><div class="row"><button id="connectBtn">Connect secure account</button><button id="syncBtn" disabled>Save now</button><button id="cloudPublishBtn" disabled>Publish online</button><button id="facebookShareBtn" class="hidden" type="button">Share on Facebook</button><button id="shareStoryBtn" class="hidden" type="button">Share story</button></div><div class="row space"><span id="saved" class="muted">Ready</span><button id="deleteBtn" class="ghost">Delete this draft</button></div></section></main>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id);const prefix='aladdin-journal-drafts-v1';let drafts=[],active=null,timer,storyBlocks=[{kind:'text',style:'paragraph',text:''}],activeTextIndex=0,inlineUploads=0;const fields=['title','category','cover','excerpt','body'];const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const id=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);function read(){try{const v=JSON.parse(localStorage.getItem(cloudUser?.email?prefix+':'+cloudUser.email:prefix)||'[]');return Array.isArray(v)?v:[]}catch{return []}}function persist(){try{localStorage.setItem(cloudUser?.email?prefix+':'+cloudUser.email:prefix,JSON.stringify(cloudUser&&cloudUser.role!=='owner'?drafts.filter(x=>x.author===cloudUser.author):drafts));$('saved').textContent='Saved on this device · '+new Date().toLocaleTimeString()}catch{$('saved').textContent='Storage unavailable — export your draft now'}}
@@ -117,15 +117,44 @@ function renderStoryBlocks(){
   root.append(wrap)
  });
 }
+const MAX_PHOTO_BYTES=5*1024*1024;
+const acceptedPhotoTypes=new Set(['image/jpeg','image/png','image/webp','image/gif']);
+async function preparePhoto(file){
+ if(!file||!file.type.startsWith('image/'))throw Error('Choose an image from your camera or photo library.');
+ if(file.size<=MAX_PHOTO_BYTES&&acceptedPhotoTypes.has(file.type))return file;
+ if(typeof createImageBitmap!=='function')throw Error('This browser cannot resize the selected picture. Please choose a JPG or PNG below 5 MB.');
+ let bitmap;
+ try{bitmap=await createImageBitmap(file)}catch{throw Error('This picture format cannot be opened here. Try a JPG or PNG photo.')}
+ try{
+  const scale=Math.min(1,2400/Math.max(bitmap.width,bitmap.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+  canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+  const ctx=canvas.getContext('2d',{alpha:false});
+  if(!ctx)throw Error('Your browser could not prepare this photograph.');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  let result=null;
+  for(const quality of [.88,.78,.66]){
+   result=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+   if(result&&result.size<=MAX_PHOTO_BYTES)break
+  }
+  if(!result||result.size>MAX_PHOTO_BYTES)throw Error('This photo is too large to upload. Try a smaller JPG or PNG.');
+  const name=(file.name||'journal-photo').replace(/\.[^.]+$/,'')+'.jpg';
+  return new File([result],name,{type:'image/jpeg',lastModified:Date.now()})
+ }finally{bitmap.close?.()}
+}
+
 async function uploadInlinePhoto(file,index,caret){
  if(!file)return;
  const d=current();if(!d||d.status==='published')return alert('Select an unpublished draft first.');
  if(!cloudUser)return alert('Connect your secure account to add photographs to your story.');
- if(file.size>5*1024*1024)return alert('Please choose a photo smaller than 5 MB.');
- const position=index??activeTextIndex;inlineUploads++;$('inlinePhotoStatus').textContent='Uploading photo securely…';$('cloudPublishBtn').disabled=true;
+
+ const position=index??activeTextIndex;inlineUploads++;$('inlinePhotoStatus').textContent='Preparing photo for secure upload…';$('cloudPublishBtn').disabled=true;
  try{
+  const readyPhoto=await preparePhoto(file);
   save();const articleId=await syncDraft(d,false);if(!articleId)throw Error('Unable to save the draft before adding a photo.');
-  const form=new FormData();form.append('photo',file);
+  const form=new FormData();form.append('photo',readyPhoto);
   const res=await fetch(apiUrl+'/api/articles/'+articleId+'/photos',{method:'POST',credentials:'include',body:form});
   const item=await res.json().catch(()=>({}));if(!res.ok)throw Error(item.error||'Upload failed');
   if(current()?.id!==d.id)throw Error('The story changed while the photo was uploading; reopen the draft.');
@@ -216,11 +245,12 @@ async function sync(){save();return syncDraft(current(),false)}
 function publishedLink(){const d=current();return d?.status==='published'&&d.slug?'https://aladdinslamp.xyz/#journal/'+encodeURIComponent(d.slug):null}async function shareStory(){const url=publishedLink();if(!url)return alert('Publish a story before sharing it.');const d=current();if(navigator.share){try{await navigator.share({title:d.title,url});return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(url);alert('Story link copied! Paste it into your social app.')}catch{prompt('Copy this story link:',url)}}function facebookShare(){const url=publishedLink();if(!url)return alert('Publish a story before sharing it.');window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url),'_blank','noopener,noreferrer')}async function cloudPublish(){if(!cloudUser)return;const d=current();if(!d)return;if(!d.title.trim()||!d.excerpt.trim()||!hasStoryText(d.body))return alert('Add a title, short introduction and story before publishing');preview();if(inlineUploads)return alert('Please finish uploading photos before publishing.');if(!confirm('Publish this story publicly on Aladdin’s Lamp? Anyone can read it after the site deploys.'))return;const id=await sync();if(!id)return;$('cloudPublishBtn').disabled=true;try{const result=await requestApi('/api/articles/'+id+'/publish','POST',{expectedUpdatedAt:d.updated_at});d.status='published';d.slug=result.slug;persist();$('status').textContent='Published · '+result.slug;open(d.id);alert('Published to the public journal feed. The website will show the story once the journal feed is connected.')}catch(e){alert('Publishing failed: '+e.message)}finally{$('cloudPublishBtn').disabled=false}}$('connectBtn').onclick=connect;$('syncBtn').onclick=sync;async function uploadPhoto(file){if(!file)return;
  const d=current();if(!d||d.status==='published'){alert('Choose an unpublished draft first.');$('photoFile').value='';return}
  if(!cloudUser){alert('Please connect your secure account before uploading a photo.');$('photoFile').value='';return}
- if(file.size>5*1024*1024){alert('This photo is too large. Choose an image under 5 MB.');$('photoFile').value='';return}
- $('photoStatus').textContent='Uploading photograph securely…';$('photoFile').disabled=true;
+
+ $('photoStatus').textContent='Preparing photograph for secure upload…';$('photoFile').disabled=true;$('photoCamera').disabled=true;
  try{
+  const readyPhoto=await preparePhoto(file);
   save();const articleId=await syncDraft(d,false);if(!articleId)throw Error('Save the story before uploading');
-  const body=new FormData();body.append('photo',file);
+  const body=new FormData();body.append('photo',readyPhoto);
   const res=await fetch(apiUrl+'/api/articles/'+articleId+'/photos',{method:'POST',credentials:'include',body});
   const result=await res.json().catch(()=>({}));
   if(!res.ok)throw Error(result.error||'Photo upload failed');
