@@ -1,22 +1,17 @@
-# Treasure Journal — editorial workflow
+# Treasure Journal — verified editorial workflow
 
-The public Journal reads `journal/posts.json` and displays entries with `status: "published"`.
+**Public reading:** https://aladdinslamp.xyz/#journal
 
-## Proposed publishing flow
+**Author Sign In (website):** https://aladdinslamp.xyz/journal/author.html
 
-1. Mike and Rachael sign into a private authenticated editorial dashboard (not yet installed).
-2. Create articles with title, author, date, body, photographs and categories; save drafts.
-3. Review and approve content before publication.
-4. Publish to the GitHub repository, triggering GitHub Pages deployment.
+**Private Writing Desk:** https://journal-api.aladdinslamp.xyz/desk
 
-## Current state
+Mike and Rachael enter through Aladdin's Lamp's branded author page, then continue through the existing Cloudflare Access email-verification gate into the private Writing Desk. No GitHub editor access or publishing token is required. Authentication happens in the protected app; the public site never handles passwords or OTPs.
 
-The public reading page and empty JSON feed exist. **There is no authenticated editor, draft workflow, image upload or publishing dashboard yet.** Do not distribute GitHub access tokens or embed secrets in public site code. Authentication and editor selection must be completed before inviting editors.
+In the private editor: start a story, enter its title, category, introduction and body; add cover and inline photographs; preview; let the online draft autosave; publish intentionally. Only published stories appear in the public Journal feed. Published articles have sharing controls. Each author is isolated from the other's drafts; owner review access is separate.
 
-Example record:
+**Do not** use the old `journal/write.html` JSON composer or edit `journal/posts.json` to publish private drafts. The former composer now redirects to the Author Sign In entrance. Existing static JSON is only the public fallback for initial editorial examples.
 
-```json
-{"title":"Welcome to Aladdin's Lamp","author":"Mike","date":"2026-11-14","status":"draft","body":"A story in paragraphs.","category":"Shop stories"}
-```
+Cloudflare Access may briefly display its secure identity-verification page. That is deliberate protection, not a requirement to create a Cloudflare account. A fully first-party authentication experience would require a separate supported authentication architecture and was not part of this frontend entrance.
 
-Only `published` records display publicly. Photos require a reviewed, secure asset workflow before use.
+**Real account acceptance still required:** each author should sign in with their configured email, reopen a saved draft, and verify the published article.

@@ -31,6 +31,8 @@ jobs:
         env:
           SITE_URL: https://aladdinslamp.xyz/
         run: node scripts/verify-no-flash-navigation.cjs
+      - name: Verify author sign-in entrance and retired composer
+        run: node scripts/verify-author-entrance.cjs
       - name: Preserve screenshots and machine-readable report even on failure
         if: always()
         uses: actions/upload-artifact@v4
