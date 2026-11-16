@@ -186,6 +186,15 @@ async function main(){
   await desk.locator('#cloudPublishBtn').click();
   await desk.getByText('Rachael · Published').waitFor({timeout:12000});
   assert.equal([...articles.values()][0].status,'published');
+  assert.equal(await desk.locator('header a').getAttribute('href'),'https://aladdinslamp.xyz/#journal','Public Journal link should lead to the storefront');
+  await desk.locator('#new').click();
+  await desk.locator('#title').fill('Signout save test');
+  await desk.locator('#excerpt').fill('Test pending draft before signing out');
+  await desk.locator('.story-part-text').first().fill('This text must reach the cloud before logout.');
+  await desk.route('**/cdn-cgi/access/logout',r=>r.fulfill({status:200,contentType:'text/html',body:'<html><body>Signed out</body></html>'}));
+  await desk.getByRole('button',{name:'Sign Out of the Writing Desk'}).click();
+  await desk.waitForURL('**/cdn-cgi/access/logout',{timeout:15000});
+  assert.ok([...articles.values()].some(a=>a.title==='Signout save test'&&a.body.includes('must reach the cloud')),'Sign Out must save unsent author edits before session termination');
   assert.deepEqual(editorErrors,[],'Editor JavaScript errors');
   console.log('PASS: author login, autosave, preview, publish and draft state in browser (mock API)');
  }finally{await browser.close()}
